@@ -68,3 +68,11 @@ bool Graph::addVertex(const std::string &vertexName) {
 bool Graph::addVertex(const Graph::VertexT &vertex) {
     return this->addVertex(vertex.getName());
 }
+
+std::set<std::string> Graph::getVerticesName() const{
+    std::set<std::string> result;
+    for (auto& v : this->vertices){
+        result.insert(v.first.getName());
+    }
+    return result;
+}

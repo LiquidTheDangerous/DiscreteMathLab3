@@ -8,6 +8,7 @@
 #include <Vertex.h>
 #include <memory>
 #include <map>
+#include <set>
 
 class Graph {
 
@@ -33,6 +34,7 @@ public:
 
     [[nodiscard]] std::list<Graph::edge> getNeighbors(const std::string &vertex) const;
 
+    [[nodiscard]] std::set<std::string> getVerticesName() const;
 
 private:
     std::map<VertexT, std::list<edge>> vertices;
