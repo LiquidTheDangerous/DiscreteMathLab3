@@ -4,14 +4,38 @@
 
 #ifndef DISCRETEMATHLAB3_GRAPH_H
 #define DISCRETEMATHLAB3_GRAPH_H
-#include <unordered_set>
+
 #include <Vertex.h>
+#include <memory>
+#include <map>
+
 class Graph {
+
 public:
-    explicit Graph(const std::size_t& verticesCount);
+    using VertexT = Vertex;
+    using edge = std::pair<VertexT, int>;
+
+    explicit Graph() = default;
+
+    bool addVertex(const std::string &vertexName);
+
+    bool addVertex(const VertexT &vertex);
+
+    [[nodiscard]] std::list<std::pair<Vertex,std::list<Graph::edge>>>  getVertices() const;
+
+    [[nodiscard]] bool contains(const std::string &vertexName) const;
+
+    [[nodiscard]] bool contains(const VertexT &vertex) const;
+
+    bool connect(const std::string &sourceName, const std::string &destinationName, int len = 1);
+
+    bool disconnect(const std::string &sourceName, const std::string &destinationName);
+
+    [[nodiscard]] std::list<Graph::edge> getNeighbors(const std::string &vertex) const;
+
 
 private:
-    std::unordered_set<Vertex> vertices;
+    std::map<VertexT, std::list<edge>> vertices;
 };
 
 

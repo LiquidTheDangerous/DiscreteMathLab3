@@ -15,21 +15,9 @@ public:
 
     explicit Vertex(const std::string &name);
 
-    explicit Vertex(std::string &&name) noexcept;
+    explicit Vertex(std::string &&name) noexcept(true);
 
     [[nodiscard]] const std::string &getName() const;
-
-    bool attachNeighbor(Vertex *vertex, int length = 1);
-
-    bool detachNeighborByName(const std::string &vertexName);
-
-    [[nodiscard]] const std::list<edge> &getNeighbors() const;
-
-    [[nodiscard]] std::size_t getNeighborsCount() const;
-
-    [[nodiscard]] bool containsNeighbor(const std::string &name) const;
-
-    [[maybe_unused]] [[nodiscard]] bool containsNeighbor(const Vertex &vertex) const;
 
     bool operator==(const Vertex &vertex) const;
 
@@ -47,14 +35,14 @@ public:
 
 private:
     std::string name;
-    std::list<edge> neighbors;
+//    std::list<edge> neighbors;
 
 };
 
 template<>
 struct std::hash<Vertex> {
     std::size_t operator()(Vertex const &vertex) const noexcept {
-        return std::hash<std::string>{}(vertex.name);;
+        return std::hash<std::string>{}(vertex.name);
     }
 };
 
