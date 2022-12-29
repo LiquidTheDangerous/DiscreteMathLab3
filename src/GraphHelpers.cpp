@@ -34,3 +34,18 @@ std::map<std::string, std::map<std::string, bool>> GraphHelpers::ReachMatrix(con
     }
     return result;
 }
+
+std::map<std::string, std::map<std::string, bool>> GraphHelpers::StrongConnectMatrix(const Graph &graph) {
+    auto reachMatrix = ReachMatrix(graph);
+    auto vertices = graph.getVerticesName();
+
+    auto result = std::map<std::string, std::map<std::string, bool>>();
+
+    for (auto &v1: vertices) {
+        for (auto &v2: vertices) {
+            result[v1][v2] = reachMatrix[v1][v2] && reachMatrix[v2][v1];
+        }
+    }
+
+    return result;
+}

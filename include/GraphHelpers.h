@@ -15,6 +15,7 @@ public:
     static void _dfs(const Graph& graph, std::set<std::string>& visited, const std::string &startVertexName);
 public:
     static std::map<std::string,std::map<std::string,bool>> ReachMatrix(const Graph& graph);
+    static std::map<std::string,std::map<std::string,bool>> StrongConnectMatrix(const Graph& graph);
 };
 
 
