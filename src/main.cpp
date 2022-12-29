@@ -54,17 +54,26 @@ int main() {
     graph.connect("7", "5");
 
 
-    auto matrix = GraphHelpers::StrongConnectMatrix(graph);
-    auto vertices = graph.getVerticesName();
-    std::cout << "  ";
-    for (auto &v: vertices) {
-        std::cout << v << ' ';
-    }
-    std::cout << std::endl;
-    for (auto &v1: vertices) {
-        std::cout << v1 << ' ';
-        for (auto &v2: vertices) {
-            std::cout << matrix[v1][v2] << ' ';
+//    auto matrix = GraphHelpers::StrongConnectMatrix(graph);
+//    auto vertices = graph.getVerticesName();
+//    std::cout << "  ";
+//    for (auto &v: vertices) {
+//        std::cout << v << ' ';
+//    }
+//    std::cout << std::endl;
+//    for (auto &v1: vertices) {
+//        std::cout << v1 << ' ';
+//        for (auto &v2: vertices) {
+//            std::cout << matrix[v1][v2] << ' ';
+//        }
+//        std::cout << std::endl;
+//    }
+
+    auto components = GraphHelpers::BoundComponents(graph);
+    for (auto &component : components){
+        std::cout << "Components: " << std::endl;
+        for (auto& v : component){
+            std::cout << v << ' ';
         }
         std::cout << std::endl;
     }

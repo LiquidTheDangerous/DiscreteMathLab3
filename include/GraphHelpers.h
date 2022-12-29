@@ -16,6 +16,7 @@ public:
 public:
     static std::map<std::string,std::map<std::string,bool>> ReachMatrix(const Graph& graph);
     static std::map<std::string,std::map<std::string,bool>> StrongConnectMatrix(const Graph& graph);
+    static std::set<std::set<std::string>> BoundComponents(const Graph& graph);
 };
 
 

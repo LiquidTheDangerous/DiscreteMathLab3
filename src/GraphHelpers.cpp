@@ -49,3 +49,25 @@ std::map<std::string, std::map<std::string, bool>> GraphHelpers::StrongConnectMa
 
     return result;
 }
+
+std::set<std::set<std::string>> GraphHelpers::BoundComponents(const Graph &graph) {
+    auto uncoveredVertices = graph.getVerticesName();
+    auto vertices = graph.getVerticesName();
+    auto result = std::set<std::set<std::string>>();
+    auto boundMatrix = StrongConnectMatrix(graph);
+    for (auto& v1 : vertices){
+        if (!uncoveredVertices.contains(v1))
+            continue;
+        auto component = std::set<std::string>();
+        for (auto& v2 : vertices){
+            if (boundMatrix[v1][v2]){
+                uncoveredVertices.erase(v2);
+                component.insert(v2);
+            }
+        }
+        if (!component.empty()){
+            result.insert(component);
+        }
+    }
+    return result;
+}
