@@ -3,16 +3,20 @@
 //
 
 #include <iostream>
-#include "Application.h"
+#include <Application.h>
 
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title),
         bgColor(sf::Color::White) {
     this->window.setVerticalSyncEnabled(true);
-    this->eventDispatcher.addListenerOnEvent(sf::Event::MouseMoved,[](const sf::Event& event,const sf::Time& dt)
-    {
-       std::cout << event.mouseMove.x << ' '<< event.mouseMove.y << std::endl;
-    });
+    if (!this->font.loadFromFile("../res/Montserrat_Regular.ttf")){
+        std::cerr << "ERROR LOADING FONT" << std::endl;
+    };
+    auto e = std::make_shared<VertexEntity>(this->font,"123");
+    e->move(100,100);
+    this->entities.addEntity(e);
+    e->getSignal(signals::onLeftMouseClicked).addSlot([](){std::cout << "Emit";});
+
 }
 
 void Application::run() {
@@ -35,6 +39,7 @@ void Application::processEvents(sf::Event &event, const sf::Time &dt) {
             this->window.close();
         }
         this->eventDispatcher.handleEvent(event,dt);
+        this->entities.handleEvent(event);
     };
     this->eventDispatcher.handleInput(dt);
 }
@@ -45,6 +50,6 @@ void Application::update(const sf::Time &dt) {
 
 void Application::render(const sf::Time &dt) {
     this->window.clear(this->bgColor);
-
+    this->window.draw(this->entities);
     this->window.display();
 }

@@ -7,12 +7,16 @@
 
 #include <SFML/Graphics.hpp>
 #include <EventDispatcher.h>
+#include <VertexEntity.h>
+#include <EntityContainer.h>
 
 class Application {
 private:
     sf::RenderWindow window;
     sf::Color bgColor;
     EventDispatcher eventDispatcher;
+    EntityContainer entities;
+    sf::Font font;
 
     void processEvents(sf::Event &event, const sf::Time &dt);
 
