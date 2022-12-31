@@ -13,6 +13,8 @@ void VertexEntity::draw(sf::RenderTarget &target, sf::RenderStates states) const
 VertexEntity::VertexEntity(sf::Font &font, const std::string &name) {
     this->text.setFont(font);
     this->setName(name);
+    this->text.setFillColor(sf::Color::Black);
+    this->text.setString(this->name);
     this->circle.setRadius(20.f);
     this->circle.move(-20.f, -20.f);
     this->circle.setFillColor(sf::Color::Red);
@@ -21,6 +23,10 @@ VertexEntity::VertexEntity(sf::Font &font, const std::string &name) {
 sf::FloatRect VertexEntity::getGlobalBounds() const {
     return this->getTransform().transformRect(this->circle.getGlobalBounds());
 
+}
+
+void VertexEntity::setCircleFillColor(const sf::Color &color) {
+    this->circle.setFillColor(color);
 }
 
 

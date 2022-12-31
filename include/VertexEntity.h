@@ -18,6 +18,7 @@ public:
     explicit VertexEntity(sf::Font &font, const std::string &name);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     sf::FloatRect getGlobalBounds() const override;
+    void setCircleFillColor(const sf::Color& color);
 };
 
 

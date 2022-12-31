@@ -8,14 +8,14 @@
 #include <SFML/Graphics.hpp>
 #include <EventDispatcher.h>
 #include <VertexEntity.h>
-#include <EntityContainer.h>
+#include <MouseEventDispatcher.h>
 
 class Application {
 private:
     sf::RenderWindow window;
     sf::Color bgColor;
     EventDispatcher eventDispatcher;
-    EntityContainer entities;
+    MouseEventDispatcher mouseEventDispatcher;
     sf::Font font;
 
     void processEvents(sf::Event &event, const sf::Time &dt);

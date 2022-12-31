@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <Application.h>
+#include "MousePositionProviderImpl.h"
 
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title),
@@ -14,8 +15,12 @@ Application::Application(int width, int height, const std::string &title) :
     };
     auto e = std::make_shared<VertexEntity>(this->font,"123");
     e->move(100,100);
-    this->entities.addEntity(e);
-    e->getSignal(signals::onLeftMouseClicked).addSlot([](){std::cout << "Emit";});
+    this->mouseEventDispatcher.setMousePositionProvider(std::make_shared<MousePositionProviderImpl>(&this->window));
+    this->mouseEventDispatcher.addEntity(e);
+    e->getSignal(signals::onLeftMouseClicked).addSlot([](){std::cout << "Left button Clicked"<<std::endl;});
+    e->getSignal(signals::onLeftMouseReleased).addSlot([](){std::cout << "Left button Released"<<std::endl;});
+    e->getSignal(signals::onMouseEntered).addSlot([e](){e->setCircleFillColor(sf::Color::Black);});
+    e->getSignal(signals::onMouseLeaved).addSlot([e](){e->setCircleFillColor(sf::Color::Red);});
 
 }
 
@@ -39,7 +44,7 @@ void Application::processEvents(sf::Event &event, const sf::Time &dt) {
             this->window.close();
         }
         this->eventDispatcher.handleEvent(event,dt);
-        this->entities.handleEvent(event);
+        this->mouseEventDispatcher.handleEvent(event);
     };
     this->eventDispatcher.handleInput(dt);
 }
@@ -50,6 +55,6 @@ void Application::update(const sf::Time &dt) {
 
 void Application::render(const sf::Time &dt) {
     this->window.clear(this->bgColor);
-    this->window.draw(this->entities);
+    this->window.draw(this->mouseEventDispatcher);
     this->window.display();
 }
