@@ -37,6 +37,8 @@ public:
 
     virtual void handleEvent(const sf::Event &event);
 
+    void update(float dt) override;
+
 private:
     std::shared_ptr<MousePositionProvider> mousePositionProvider;
     std::list<EntityPtr> entities;

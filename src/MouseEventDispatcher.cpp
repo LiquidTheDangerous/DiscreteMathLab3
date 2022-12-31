@@ -81,3 +81,9 @@ void MouseEventDispatcher::handleEvent(const sf::Event &event) {
 void MouseEventDispatcher::setMousePositionProvider(std::shared_ptr<MousePositionProvider> MousePositionProvider) {
     this->mousePositionProvider = std::move(MousePositionProvider);
 }
+
+void MouseEventDispatcher::update(float dt) {
+    for (auto& e : this->entities){
+        e->update(dt);
+    }
+}

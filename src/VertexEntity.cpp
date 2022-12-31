@@ -18,6 +18,7 @@ VertexEntity::VertexEntity(sf::Font &font, const std::string &name) {
     this->circle.setRadius(20.f);
     this->circle.move(-20.f, -20.f);
     this->circle.setFillColor(sf::Color::Red);
+//    this->mpp = std::make_shared<MousePositionProviderImpl>();
 }
 
 sf::FloatRect VertexEntity::getGlobalBounds() const {
@@ -27,6 +28,26 @@ sf::FloatRect VertexEntity::getGlobalBounds() const {
 
 void VertexEntity::setCircleFillColor(const sf::Color &color) {
     this->circle.setFillColor(color);
+}
+
+void VertexEntity::setMousePositionProvider(std::shared_ptr<MousePositionProvider> mpp) {
+    this->mpp = std::move(mpp);
+}
+
+void VertexEntity::followMouse(float offset_x, float offset_y) {
+    this->followsMouse = true;
+    this->mouse_offset = std::make_pair(offset_x,offset_y);
+}
+
+void VertexEntity::unfollowMouse() {
+    this->followsMouse = false;
+}
+
+void VertexEntity::update(float dt) {
+    if (!this->followsMouse)
+        return;
+    auto mp = this->mpp->getMousePosition();
+    this->setPosition(mp.first + this->mouse_offset.first,mp.second + this->mouse_offset.second);
 }
 
 

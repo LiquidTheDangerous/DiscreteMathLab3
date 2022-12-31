@@ -13,8 +13,8 @@ public:
     void setName(const std::string& name);
     const std::string& getName() const;
     Signal& getSignal(const std::size_t& id);
-    void setFillColor(const sf::Color& color);
     virtual sf::FloatRect getGlobalBounds() const;
+    virtual void update(float dt);
 protected:
     friend class MouseEventDispatcher;
     SignalContainer signals;

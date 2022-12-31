@@ -18,3 +18,6 @@ void Entity::setName(const std::string &name) {
 sf::FloatRect Entity::getGlobalBounds() const {
     return {0.f,0.f,0.f,0.f};
 }
+
+void Entity::update(float dt) {
+}
