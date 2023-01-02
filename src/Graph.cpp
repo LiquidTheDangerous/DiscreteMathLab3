@@ -4,7 +4,7 @@
 
 #include <Graph.h>
 
-std::list<std::pair<Vertex,std::list<Graph::edge>>> Graph::getVertices() const {
+std::list<std::pair<Vertex, std::list<Graph::edge>>> Graph::getVertices() const {
     return {this->vertices.begin(), this->vertices.end()};
 }
 
@@ -61,7 +61,7 @@ bool Graph::disconnect(const std::string &sourceName, const std::string &destina
 bool Graph::addVertex(const std::string &vertexName) {
     if (this->contains(vertexName))
         return false;
-    this->vertices.emplace(Vertex(vertexName),std::list<Graph::edge>());
+    this->vertices.emplace(Vertex(vertexName), std::list<Graph::edge>());
     return true;
 }
 
@@ -69,10 +69,25 @@ bool Graph::addVertex(const Graph::VertexT &vertex) {
     return this->addVertex(vertex.getName());
 }
 
-std::set<std::string> Graph::getVerticesName() const{
+std::set<std::string> Graph::getVerticesName() const {
     std::set<std::string> result;
-    for (auto& v : this->vertices){
+    for (auto &v: this->vertices) {
         result.insert(v.first.getName());
     }
     return result;
+}
+
+void Graph::removeVertex(const std::string &vertexName) {
+    for (auto& e: this->vertices) {
+        auto iter = std::remove_if(e.second.begin(), e.second.end(), [&vertexName](Graph::edge &item)->bool {
+            return item.first.getName() == vertexName;
+        });
+        e.second.erase(iter,e.second.end());
+    }
+
+    auto count = std::erase_if(this->vertices,[&vertexName](const auto& item)->bool
+    {
+        auto const& [key,val] = item;
+        return key.getName() == vertexName;
+    });
 }

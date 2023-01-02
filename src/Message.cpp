@@ -10,8 +10,8 @@ void Message::update(float dt) {
         this->ttl -= dt;
     }else{
         auto color = this->text.getFillColor();
-        if (color.a > 0){
-            color.a -= 1;
+        if (color.a - 2 > 0){
+            color.a -= 2;
             this->text.setFillColor(color);
         }
         else{

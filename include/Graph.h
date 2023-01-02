@@ -22,6 +22,8 @@ public:
 
     bool addVertex(const VertexT &vertex);
 
+    void removeVertex(const std::string& vertexName);
+
     [[nodiscard]] std::list<std::pair<Vertex,std::list<Graph::edge>>>  getVertices() const;
 
     [[nodiscard]] bool contains(const std::string &vertexName) const;

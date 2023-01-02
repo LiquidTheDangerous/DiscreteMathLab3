@@ -10,6 +10,7 @@
 #include <VertexEntity.h>
 #include <EntityEventDispatcherImpl.h>
 #include <Graph.h>
+#include <Message.h>
 
 class Application {
 private:
@@ -32,13 +33,30 @@ private:
 
     void render(const sf::Time &dt);
 
+    void createMessage(const std::string& text, float ttl);
 
+    struct ByPressingRightMouseButtonOnVertex {
+
+        ByPressingRightMouseButtonOnVertex(Application *app, Entity* e) {
+            this->app = app;
+            this->e = e;
+        }
+        void operator()(void *param) {
+            e->markToRemove(true);
+            app->graph.removeVertex((e->getName()));
+            auto message = std::make_shared<Message>(app->font, "Vertex removed", 1);
+            auto w_size = app->window.getSize();
+            message->setPosition((float) w_size.x / 2, (float) w_size.y - 100);
+            app->guiEventDispatcher->addEntity(message);
+        };
+        Application *app;
+        Entity* e;
+    };
 
 public:
     void run();
 
     Application(int width, int height, const std::string &title = "Application");
-
 
 
 };

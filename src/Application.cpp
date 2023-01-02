@@ -8,6 +8,7 @@
 #include <Label.h>
 #include <Message.h>
 
+
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title),
         bgColor(sf::Color::White) {
@@ -24,44 +25,42 @@ Application::Application(int width, int height, const std::string &title) :
     };
     this->eventDispatcher.addListenerOnEvent(sf::Event::Resized,
                                              [this](const sf::Event &event, const sf::Time &dt) {
-
-
-                                                 this->gui_view.setSize(event.size.width, event.size.height);
-                                                 this->gui_view.setCenter(event.size.width / 2, event.size.height / 2);
-                                                 this->view.setSize(event.size.width, event.size.height);
-                                                 this->view.setCenter(event.size.width / 2, event.size.height / 2);
+                                                 this->gui_view.setSize((float)event.size.width,(float) event.size.height);
+                                                 this->gui_view.setCenter((float)event.size.width / 2, (float)event.size.height / 2);
+                                                 this->view.setSize((float)event.size.width,(float) event.size.height);
+                                                 this->view.setCenter((float)event.size.width / 2, (float)event.size.height / 2);
 
                                              });
 
-
-
-    auto e = std::make_shared<VertexEntity>(this->font, "123", mppWorldPos);
-    e->move(100, 100);
-
     auto label = std::make_shared<Label>(this->font, "Enter Vertex Name");
     label->move(600, 0);
-    label->getSignal(signals::onEndEditingText).addSlot([label,this](void* param)
-    {
+    label->getSignal(signals::onEndEditingText).addSlot([label{label.get()}, this](void *param) {
         auto text = label->getString();
+        if (this->graph.contains(text)) {
+            this->createMessage("Vertex already exists...", 0.5f);
+            return;
+        }
+        if (text.empty()) {
+            this->createMessage("Vertex name should be not empty...", 0.5f);
+            return;
+        }
         label->setString("");
         auto e = std::make_shared<VertexEntity>(this->font, text, this->mppWorldPos);
-        e->followMouse(0,0);
+        e->getSignal(signals::onRightMouseClicked).addSlot(
+                Application::ByPressingRightMouseButtonOnVertex(this, e.get()));
+
+        e->followMouse(0, 0);
         this->mouseEventDispatcher->addEntity(e);
+        this->graph.addVertex(text);
+        this->createMessage("Vertex created",0.5f);
     });
 
-    auto m = std::make_shared<Message>(this->font,"test",3);
-    m->move(100,100);
-    m->getSignal(signals::onDelete).addSlot([](void*)
-    {
-        std::cout << "RM" << std::endl;
-    });
+
     this->mouseEventDispatcher->setMousePositionProvider(mppWorldPos);
 
     this->guiEventDispatcher->setMousePositionProvider(mppGUI);
 
-    this->mouseEventDispatcher->addEntity(e);
     this->guiEventDispatcher->addEntity(label);
-    this->guiEventDispatcher->addEntity(m);
 }
 
 void Application::run() {
@@ -105,4 +104,11 @@ void Application::render(const sf::Time &dt) {
     this->window.draw(*this->guiEventDispatcher);
 
     this->window.display();
+}
+
+void Application::createMessage(const std::string &text, float ttl) {
+    auto message = std::make_shared<Message>(this->font, text, ttl);
+    auto w_size = this->window.getSize();
+    message->setPosition((float) w_size.x / 2, (float) w_size.y - 100);
+    this->guiEventDispatcher->addEntity(message);
 }
