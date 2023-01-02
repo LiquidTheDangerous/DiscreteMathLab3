@@ -14,9 +14,9 @@ public:
     const std::string& getName() const;
     Signal& getSignal(const std::size_t& id);
     virtual sf::FloatRect getGlobalBounds() const;
-    virtual void update(float dt);
+    virtual void update(float dt) = 0;
 protected:
-    friend class MouseEventDispatcher;
+    friend class EntityEventDispatcherImpl;
     SignalContainer signals;
     std::string name;
 };

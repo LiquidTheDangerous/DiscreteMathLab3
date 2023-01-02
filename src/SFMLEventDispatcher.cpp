@@ -2,10 +2,10 @@
 // Created by ASUS on 30.12.2022.
 //
 
-#include <EventDispatcher.h>
+#include <SFMLEventDispatcher.h>
 
 
-void EventDispatcher::handleEvent(const sf::Event& event, const sf::Time& dt)
+void SFMLEventDispatcher::handleEvent(const sf::Event& event, const sf::Time& dt)
 {
 	auto iter1 = this->bindsEvent.find(event.type);
 
@@ -46,7 +46,7 @@ void EventDispatcher::handleEvent(const sf::Event& event, const sf::Time& dt)
 
 
 
-void EventDispatcher::handleInput(const sf::Time& dt)
+void SFMLEventDispatcher::handleInput(const sf::Time& dt)
 {
 	for (auto& c_pair : this->bindsKeyboard) {
 
@@ -71,37 +71,37 @@ void EventDispatcher::handleInput(const sf::Time& dt)
 }
 
 
-void EventDispatcher::addListenerOnKey(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>& func)
+void SFMLEventDispatcher::addListenerOnKey(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>& func)
 {
 	this->bindsKeyboard.emplace(key, func);
 }
 
-void EventDispatcher::addListenerOnEvent(sf::Event::EventType eventType, const std::function<void(const sf::Event&, const sf::Time&)>& func)
+void SFMLEventDispatcher::addListenerOnEvent(sf::Event::EventType eventType, const std::function<void(const sf::Event&, const sf::Time&)>& func)
 {
 	this->bindsEvent.emplace(eventType, func);
 }
 
-void EventDispatcher::addListenerOnKeyPressedEvent(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>& func)
+void SFMLEventDispatcher::addListenerOnKeyPressedEvent(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>& func)
 {
 	this->bindsEventKeyCodePressed.emplace(key, func);
 }
 
-void EventDispatcher::addListenerOnKeyReleasedEvent(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>& func)
+void SFMLEventDispatcher::addListenerOnKeyReleasedEvent(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>& func)
 {
 	this->bindsEventKeyCodeReleased.emplace(key, func);
 }
 
-void EventDispatcher::addListenerOnMousePressed(sf::Mouse::Button mouseButton, const std::function<void(const sf::Time&)>& func)
+void SFMLEventDispatcher::addListenerOnMousePressed(sf::Mouse::Button mouseButton, const std::function<void(const sf::Time&)>& func)
 {
 	this->bindsMousePressed.emplace(mouseButton, func);
 }
 
-void EventDispatcher::addListenerOnMouseReleasedEvent(sf::Mouse::Button mouseButton, const std::function<void(const sf::Time&)>& func)
+void SFMLEventDispatcher::addListenerOnMouseReleasedEvent(sf::Mouse::Button mouseButton, const std::function<void(const sf::Time&)>& func)
 {
 	this->bindsMouseReleased.emplace(mouseButton, func);
 }
 
-void EventDispatcher::removeListenerOnMouseReleasedEvent(sf::Mouse::Button mouseButton)
+void SFMLEventDispatcher::removeListenerOnMouseReleasedEvent(sf::Mouse::Button mouseButton)
 {
 	auto iter = this->bindsMouseReleased.find(mouseButton);
 	if (iter == this->bindsMouseReleased.end())
@@ -109,7 +109,7 @@ void EventDispatcher::removeListenerOnMouseReleasedEvent(sf::Mouse::Button mouse
 	this->bindsMouseReleased.erase(iter);
 }
 
-void EventDispatcher::removeListenerOnKeyReleasedEvent(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>&)
+void SFMLEventDispatcher::removeListenerOnKeyReleasedEvent(sf::Keyboard::Key key, const std::function<void(const sf::Time&)>&)
 {
 	auto iter = this->bindsEventKeyCodeReleased.find(key);
 	if (iter == this->bindsEventKeyCodeReleased.end())
@@ -117,7 +117,7 @@ void EventDispatcher::removeListenerOnKeyReleasedEvent(sf::Keyboard::Key key, co
 	this->bindsEventKeyCodeReleased.erase(iter);
 }
 
-void EventDispatcher::removeListenerOnKeyPressedEvent(sf::Keyboard::Key key)
+void SFMLEventDispatcher::removeListenerOnKeyPressedEvent(sf::Keyboard::Key key)
 {
 	auto iter = this->bindsEventKeyCodePressed.find(key);
 	if (iter == this->bindsEventKeyCodePressed.end())
@@ -125,7 +125,7 @@ void EventDispatcher::removeListenerOnKeyPressedEvent(sf::Keyboard::Key key)
 	this->bindsEventKeyCodePressed.erase(iter);
 }
 
-void EventDispatcher::removeListenerOnMouse(sf::Mouse::Button mouseButton)
+void SFMLEventDispatcher::removeListenerOnMouse(sf::Mouse::Button mouseButton)
 {
 	auto iter = this->bindsMousePressed.find(mouseButton);
 	if (iter == this->bindsMousePressed.end())
@@ -133,7 +133,7 @@ void EventDispatcher::removeListenerOnMouse(sf::Mouse::Button mouseButton)
 	this->bindsMousePressed.erase(iter);
 }
 
-void EventDispatcher::removeListenerOnKey(sf::Keyboard::Key key)
+void SFMLEventDispatcher::removeListenerOnKey(sf::Keyboard::Key key)
 {
 	auto iter = this->bindsKeyboard.find(key);
 	if (iter == this->bindsKeyboard.end())
@@ -142,7 +142,7 @@ void EventDispatcher::removeListenerOnKey(sf::Keyboard::Key key)
 	this->bindsKeyboard.erase(iter);
 }
 
-void EventDispatcher::removeListenerOnEvent(sf::Event::EventType event)
+void SFMLEventDispatcher::removeListenerOnEvent(sf::Event::EventType event)
 {
 	auto iter = this->bindsEvent.find(event);
 

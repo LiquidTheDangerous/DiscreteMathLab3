@@ -2,13 +2,13 @@
 // Created by ASUS on 30.12.2022.
 //
 
-#ifndef DISCRETEMATHLAB3_EVENTDISPATCHER_H
-#define DISCRETEMATHLAB3_EVENTDISPATCHER_H
+#ifndef DISCRETEMATHLAB3_SFMLEVENTDISPATCHER_H
+#define DISCRETEMATHLAB3_SFMLEVENTDISPATCHER_H
 
 #include <map>
 #include <SFML/Graphics.hpp>
 
-class EventDispatcher {
+class SFMLEventDispatcher {
 public:
 
     void handleEvent(const sf::Event &event, const sf::Time &dt);
@@ -54,4 +54,4 @@ private:
 };
 
 
-#endif //DISCRETEMATHLAB3_EVENTDISPATCHER_H
+#endif //DISCRETEMATHLAB3_SFMLEVENTDISPATCHER_H

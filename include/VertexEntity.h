@@ -21,13 +21,13 @@ private:
     std::shared_ptr<MousePositionProvider> mpp;
     bool followsMouse = false;
 public:
-    explicit VertexEntity(sf::Font &font, const std::string &name);
+    explicit VertexEntity(sf::Font &font, const std::string &name, std::shared_ptr<MousePositionProvider> mpp);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void setMousePositionProvider(std::shared_ptr<MousePositionProvider> mpp);
 
     void followMouse(float offset_x, float offset_y);
     void unfollowMouse();
-
+    bool isFollowedMouse() const;
     void update(float dt) override;
 
     sf::FloatRect getGlobalBounds() const override;

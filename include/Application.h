@@ -6,17 +6,19 @@
 #define DISCRETEMATHLAB3_APPLICATION_H
 
 #include <SFML/Graphics.hpp>
-#include <EventDispatcher.h>
+#include <SFMLEventDispatcher.h>
 #include <VertexEntity.h>
-#include <MouseEventDispatcher.h>
+#include <EntityEventDispatcherImpl.h>
+#include <Graph.h>
 
 class Application {
 private:
     sf::RenderWindow window;
     sf::Color bgColor;
-    EventDispatcher eventDispatcher;
-    MouseEventDispatcher mouseEventDispatcher;
+    SFMLEventDispatcher eventDispatcher;
+    std::shared_ptr<EntityEventDispatcher> mouseEventDispatcher;
     sf::Font font;
+    Graph graph;
 
     void processEvents(sf::Event &event, const sf::Time &dt);
 
@@ -24,10 +26,14 @@ private:
 
     void render(const sf::Time &dt);
 
+
+
 public:
     void run();
 
     Application(int width, int height, const std::string &title = "Application");
+
+
 
 };
 

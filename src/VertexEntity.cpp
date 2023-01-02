@@ -3,6 +3,8 @@
 //
 
 #include <VertexEntity.h>
+#include <EntityEventDispatcherImpl.h>
+#include <MousePositionProvider.h>
 
 void VertexEntity::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     states.transform *= this->getTransform();
@@ -10,7 +12,7 @@ void VertexEntity::draw(sf::RenderTarget &target, sf::RenderStates states) const
     target.draw(this->text, states);
 }
 
-VertexEntity::VertexEntity(sf::Font &font, const std::string &name) {
+VertexEntity::VertexEntity(sf::Font &font, const std::string &name, std::shared_ptr<MousePositionProvider> mpp) {
     this->text.setFont(font);
     this->setName(name);
     this->text.setFillColor(sf::Color::Black);
@@ -18,7 +20,22 @@ VertexEntity::VertexEntity(sf::Font &font, const std::string &name) {
     this->circle.setRadius(20.f);
     this->circle.move(-20.f, -20.f);
     this->circle.setFillColor(sf::Color::Red);
-//    this->mpp = std::make_shared<MousePositionProviderImpl>();
+    this->mpp = std::move(mpp);
+
+    this->getSignal(signals::onLeftMouseClicked).addSlot([this](void*) {
+
+        this->followMouse(0, 0);
+    });
+    this->getSignal(signals::onLeftMouseReleased).addSlot([this](void*) {
+        this->unfollowMouse();
+    });
+    this->getSignal(signals::onMouseEntered).addSlot([this](void*) {
+        auto name = this->getName();
+        this->setCircleFillColor(sf::Color::Black);
+    });
+    this->getSignal(signals::onMouseLeaved).addSlot([this](void*) {
+        this->setCircleFillColor(sf::Color::Red);
+    });
 }
 
 sf::FloatRect VertexEntity::getGlobalBounds() const {
@@ -48,6 +65,10 @@ void VertexEntity::update(float dt) {
         return;
     auto mp = this->mpp->getMousePosition();
     this->setPosition(mp.first + this->mouse_offset.first,mp.second + this->mouse_offset.second);
+}
+
+bool VertexEntity::isFollowedMouse() const {
+    return this->followsMouse;
 }
 
 

@@ -13,24 +13,24 @@ class Signal {
 public:
     Signal() = default;
 
-    std::size_t addSlot(const std::function<void(void)> &);
+    std::size_t addSlot(const std::function<void(void*)> &);
 
     bool deleteSlot(std::size_t id);
 
-    [[nodiscard]] std::function<void(void)> getSlot(std::size_t id) const;
+    [[nodiscard]] std::function<void(void*)> getSlot(std::size_t id) const;
 
     std::size_t getSlotsCount();
 
-    void operator()() const;
+    void operator()(void* ) const;
 
 private:
     std::size_t id;
-    std::map<std::size_t, std::function<void(void)>> delegates;
+    std::map<std::size_t, std::function<void(void*)>> delegates;
 };
 
 class SignalContainer {
 public:
-    void emit(std::size_t id) const;
+    void emit(std::size_t id, void *param) const;
 
     bool add(std::size_t id, const Signal &signal);
 

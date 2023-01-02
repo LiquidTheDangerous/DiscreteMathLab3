@@ -2,22 +2,22 @@
 // Created by ASUS on 31.12.2022.
 //
 
-#include <MouseEventDispatcher.h>
+#include <EntityEventDispatcherImpl.h>
 #include <iostream>
 #include <utility>
 
-void MouseEventDispatcher::draw(sf::RenderTarget &target, sf::RenderStates states) const {
+void EntityEventDispatcherImpl::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     states.transform *= this->getTransform();
     for (auto &entity: this->entities) {
         target.draw(*entity, states);
     }
 }
 
-void MouseEventDispatcher::addEntity(const std::shared_ptr<Entity> &entity) {
+void EntityEventDispatcherImpl::addEntity(const std::shared_ptr<Entity> &entity) {
     this->entities.push_back(entity);
 }
 
-void MouseEventDispatcher::handleEvent(const sf::Event &event) {
+void EntityEventDispatcherImpl::handleEvent(const sf::Event &event) {
     if (event.type == sf::Event::MouseButtonPressed) {
         auto pos = this->mousePositionProvider->getMousePosition();
         for (auto &e: this->entities) {
@@ -25,13 +25,13 @@ void MouseEventDispatcher::handleEvent(const sf::Event &event) {
             if (bounds.contains(pos.first, pos.second)) {
                 switch (event.mouseButton.button) {
                     case sf::Mouse::Left:
-                        e->signals.emit(signals::onLeftMouseClicked);
+                        e->signals.emit(signals::onLeftMouseClicked, (void*)&event);
                         break;
                     case sf::Mouse::Right:
-                        e->signals.emit(signals::onRightMouseClicked);
+                        e->signals.emit(signals::onRightMouseClicked, (void*)&event);
                         break;
                     case sf::Mouse::Middle:
-                        e->signals.emit(signals::onMiddleMouseClicked);
+                        e->signals.emit(signals::onMiddleMouseClicked, (void*)&event);
                         break;
                 }
             }
@@ -44,13 +44,13 @@ void MouseEventDispatcher::handleEvent(const sf::Event &event) {
             if (bounds.contains(pos.first, pos.second)) {
                 switch (event.mouseButton.button) {
                     case sf::Mouse::Left:
-                        e->signals.emit(signals::onLeftMouseReleased);
+                        e->signals.emit(signals::onLeftMouseReleased, (void*)&event);
                         break;
                     case sf::Mouse::Right:
-                        e->signals.emit(signals::onRightMouseReleased);
+                        e->signals.emit(signals::onRightMouseReleased, (void*)&event);
                         break;
                     case sf::Mouse::Middle:
-                        e->signals.emit(signals::onMiddleMouseReleased);
+                        e->signals.emit(signals::onMiddleMouseReleased, (void*)&event);
                         break;
                 }
             }
@@ -64,25 +64,30 @@ void MouseEventDispatcher::handleEvent(const sf::Event &event) {
             auto bounds = e->getGlobalBounds();
             if (bounds.contains(pos.first, pos.second)) {
                 if (e_id != c) {
-                    e->signals.emit(signals::onMouseEntered);
+                    e->signals.emit(signals::onMouseEntered, (void*)&event);
                     e_id = c;
                 }
             } else {
                 if (e_id == c) {
-                    e->signals.emit(signals::onMouseLeaved);
+                    e->signals.emit(signals::onMouseLeaved, (void*)&event);
                     e_id = -1;
                 }
             }
             ++c;
         }
     }
+    if (event.type == sf::Event::TextEntered){
+        for (auto &e : this->entities){
+            e->signals.emit(signals::onEnteredText, (void*)&event);
+        }
+    }
 }
 
-void MouseEventDispatcher::setMousePositionProvider(std::shared_ptr<MousePositionProvider> MousePositionProvider) {
+void EntityEventDispatcherImpl::setMousePositionProvider(std::shared_ptr<MousePositionProvider> MousePositionProvider) {
     this->mousePositionProvider = std::move(MousePositionProvider);
 }
 
-void MouseEventDispatcher::update(float dt) {
+void EntityEventDispatcherImpl::update(float dt) {
     for (auto& e : this->entities){
         e->update(dt);
     }
