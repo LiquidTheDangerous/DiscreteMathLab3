@@ -11,6 +11,7 @@
 #include <memory>
 #include <MousePositionProvider.h>
 #include <EntityEventDispatcher.h>
+#include <algorithm>
 
 enum signals {
     onLeftMouseClicked,
@@ -22,6 +23,8 @@ enum signals {
     onMouseEntered,
     onMouseLeaved,
     onEnteredText,
+    onEndEditingText,
+    onDelete,
     signalsCount
 };
 
@@ -41,7 +44,12 @@ public:
 
     void update(float dt) override;
 
+    void markToRemove(bool remove) override;
+
+    bool needsRemoved() const override;
+
 private:
+    void removeEntities();
     std::shared_ptr<MousePositionProvider> mousePositionProvider;
     std::list<EntityPtr> entities;
     std::size_t e_id = -1;

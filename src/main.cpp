@@ -4,7 +4,7 @@
 
 
 int main() {
-    Application app(800,600,"Graph");
+    Application app(1280,1024,"Graph");
     app.run();
     return 0;
 }

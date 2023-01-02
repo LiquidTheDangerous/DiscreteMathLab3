@@ -13,25 +13,38 @@
 #include <utility>
 
 class VertexEntity :
-public Entity {
+        public Entity {
 private:
     sf::CircleShape circle;
     sf::Text text;
-    std::pair<float,float> mouse_offset;
+    std::pair<float, float> mouse_offset;
     std::shared_ptr<MousePositionProvider> mpp;
     bool followsMouse = false;
+    bool rm_flag;
+
 public:
     explicit VertexEntity(sf::Font &font, const std::string &name, std::shared_ptr<MousePositionProvider> mpp);
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
+
     void setMousePositionProvider(std::shared_ptr<MousePositionProvider> mpp);
 
     void followMouse(float offset_x, float offset_y);
+
     void unfollowMouse();
+
     bool isFollowedMouse() const;
+
     void update(float dt) override;
 
     sf::FloatRect getGlobalBounds() const override;
-    void setCircleFillColor(const sf::Color& color);
+
+    void setCircleFillColor(const sf::Color &color);
+
+    void markToRemove(bool remove) override;
+
+    bool needsRemoved() const override;
+
 };
 
 

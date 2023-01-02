@@ -11,13 +11,15 @@
 
 class MousePositionProviderImpl : public MousePositionProvider {
     sf::RenderWindow *window;
+    sf::View* view;
 public:
-    MousePositionProviderImpl(sf::RenderWindow *window) {
+    MousePositionProviderImpl(sf::RenderWindow *window, sf::View* view) {
+        this->view = view;
         this->window = window;
     }
 
     [[nodiscard]] std::pair<float, float> getMousePosition() const override {
-        auto pos = window->mapPixelToCoords(sf::Mouse::getPosition(*this->window));
+        auto pos = window->mapPixelToCoords(sf::Mouse::getPosition(*this->window),*this->view);
         return {pos.x,pos.y};
     }
 

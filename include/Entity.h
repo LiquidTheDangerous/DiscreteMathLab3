@@ -15,6 +15,8 @@ public:
     Signal& getSignal(const std::size_t& id);
     virtual sf::FloatRect getGlobalBounds() const;
     virtual void update(float dt) = 0;
+    virtual void markToRemove(bool remove) = 0;
+    virtual bool needsRemoved()const = 0 ;
 protected:
     friend class EntityEventDispatcherImpl;
     SignalContainer signals;

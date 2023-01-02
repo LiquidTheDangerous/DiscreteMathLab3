@@ -14,6 +14,7 @@ class Label : public Entity {
     sf::Text text;
     sf::VertexArray line;
     bool selected = false;
+    bool rm_flag;
 
     void reinitLine();
 
@@ -39,6 +40,10 @@ public:
     void update(float dt) override;
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
+
+    void markToRemove(bool remove) override;
+
+    bool needsRemoved() const override;
 
 
 };

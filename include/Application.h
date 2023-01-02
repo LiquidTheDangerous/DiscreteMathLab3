@@ -17,7 +17,13 @@ private:
     sf::Color bgColor;
     SFMLEventDispatcher eventDispatcher;
     std::shared_ptr<EntityEventDispatcher> mouseEventDispatcher;
+    std::shared_ptr<EntityEventDispatcher> guiEventDispatcher;
+    std::shared_ptr<MousePositionProvider> mppGUI;
+    std::shared_ptr<MousePositionProvider> mppWorldPos;
+
     sf::Font font;
+    sf::View view;
+    sf::View gui_view;
     Graph graph;
 
     void processEvents(sf::Event &event, const sf::Time &dt);

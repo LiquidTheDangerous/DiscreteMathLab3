@@ -25,13 +25,13 @@ void EntityEventDispatcherImpl::handleEvent(const sf::Event &event) {
             if (bounds.contains(pos.first, pos.second)) {
                 switch (event.mouseButton.button) {
                     case sf::Mouse::Left:
-                        e->signals.emit(signals::onLeftMouseClicked, (void*)&event);
+                        e->signals.emit(signals::onLeftMouseClicked, (void *) &event);
                         break;
                     case sf::Mouse::Right:
-                        e->signals.emit(signals::onRightMouseClicked, (void*)&event);
+                        e->signals.emit(signals::onRightMouseClicked, (void *) &event);
                         break;
                     case sf::Mouse::Middle:
-                        e->signals.emit(signals::onMiddleMouseClicked, (void*)&event);
+                        e->signals.emit(signals::onMiddleMouseClicked, (void *) &event);
                         break;
                 }
             }
@@ -44,13 +44,13 @@ void EntityEventDispatcherImpl::handleEvent(const sf::Event &event) {
             if (bounds.contains(pos.first, pos.second)) {
                 switch (event.mouseButton.button) {
                     case sf::Mouse::Left:
-                        e->signals.emit(signals::onLeftMouseReleased, (void*)&event);
+                        e->signals.emit(signals::onLeftMouseReleased, (void *) &event);
                         break;
                     case sf::Mouse::Right:
-                        e->signals.emit(signals::onRightMouseReleased, (void*)&event);
+                        e->signals.emit(signals::onRightMouseReleased, (void *) &event);
                         break;
                     case sf::Mouse::Middle:
-                        e->signals.emit(signals::onMiddleMouseReleased, (void*)&event);
+                        e->signals.emit(signals::onMiddleMouseReleased, (void *) &event);
                         break;
                 }
             }
@@ -64,21 +64,21 @@ void EntityEventDispatcherImpl::handleEvent(const sf::Event &event) {
             auto bounds = e->getGlobalBounds();
             if (bounds.contains(pos.first, pos.second)) {
                 if (e_id != c) {
-                    e->signals.emit(signals::onMouseEntered, (void*)&event);
+                    e->signals.emit(signals::onMouseEntered, (void *) &event);
                     e_id = c;
                 }
             } else {
                 if (e_id == c) {
-                    e->signals.emit(signals::onMouseLeaved, (void*)&event);
+                    e->signals.emit(signals::onMouseLeaved, (void *) &event);
                     e_id = -1;
                 }
             }
             ++c;
         }
     }
-    if (event.type == sf::Event::TextEntered){
-        for (auto &e : this->entities){
-            e->signals.emit(signals::onEnteredText, (void*)&event);
+    if (event.type == sf::Event::TextEntered) {
+        for (auto &e: this->entities) {
+            e->signals.emit(signals::onEnteredText, (void *) &event);
         }
     }
 }
@@ -88,7 +88,28 @@ void EntityEventDispatcherImpl::setMousePositionProvider(std::shared_ptr<MousePo
 }
 
 void EntityEventDispatcherImpl::update(float dt) {
-    for (auto& e : this->entities){
+    auto nr = false;
+    for (auto &e: this->entities) {
         e->update(dt);
+        nr |= e->needsRemoved();
     }
+    if (nr){
+        this->removeEntities();
+    }
+}
+
+void EntityEventDispatcherImpl::markToRemove(bool remove) {
+
+}
+
+bool EntityEventDispatcherImpl::needsRemoved() const {
+    return false;
+}
+
+void EntityEventDispatcherImpl::removeEntities() {
+    auto iter = std::remove_if(this->entities.begin(), this->entities.end(), [](const std::shared_ptr<Entity>& e)->bool
+    {
+        return e->needsRemoved();
+    });
+    this->entities.erase(iter,this->entities.end());
 }

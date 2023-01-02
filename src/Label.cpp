@@ -3,7 +3,7 @@
 //
 
 #include "Label.h"
-#include <EntityEventDispatcherImpl.h>
+#include "EntityEventDispatcherImpl.h"
 
 sf::FloatRect Label::getGlobalBounds() const {
     if (this->text.getString().getSize() == 0){
@@ -47,6 +47,7 @@ Label::Label(sf::Font &font, const std::string &placeholder, const std::string &
             }
             if (symbol == '\r') {
                 this->setSelected(false);
+                this->signals.emit(signals::onEndEditingText,nullptr);
                 return;
             }
             this->setString(this->getString() + symbol);
@@ -91,4 +92,12 @@ void Label::reinitLine() {
     this->line[0] = sf::Vertex(sf::Vector2f(bounds.left, bounds.top + bounds.height), sf::Color::Black);
     this->line[1] = sf::Vertex(sf::Vector2f(bounds.left + bounds.width, bounds.top + bounds.height),
                                sf::Color::Black);
+}
+
+void Label::markToRemove(bool remove) {
+    this->rm_flag = remove;
+}
+
+bool Label::needsRemoved()const {
+    return this->rm_flag;
 }

@@ -71,4 +71,12 @@ bool VertexEntity::isFollowedMouse() const {
     return this->followsMouse;
 }
 
+void VertexEntity::markToRemove(bool remove) {
+    this->rm_flag = remove;
+}
+
+bool VertexEntity::needsRemoved() const {
+    return this->rm_flag;
+}
+
 
