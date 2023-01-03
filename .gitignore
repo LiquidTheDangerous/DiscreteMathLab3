@@ -4,4 +4,4 @@ cmake-build-debug
 classDiagramm.puml
 CMakeFiles
 
-/lib/
+lib
