@@ -12,6 +12,8 @@
 #include <Graph.h>
 #include <Message.h>
 #include <EntityBounder.h>
+
+
 class Application {
 private:
     sf::RenderWindow window;
@@ -33,27 +35,33 @@ private:
 
     void render(const sf::Time &dt);
 
-    void createMessage(const std::string& text, float ttl);
+    void createMessage(const std::string &text, float ttl);
 
     struct ByPressingRightMouseButtonOnVertex {
 
-        ByPressingRightMouseButtonOnVertex(Application *app, Entity* e) {
+        ByPressingRightMouseButtonOnVertex(Application *app, Entity *e) {
             this->app = app;
             this->e = e;
         }
+
         void operator()(void *param) {
+            if (app->entityBounder->isBounding()) {
+                app->createMessage("Cannot remove vertex while creating edge",0.5f);
+                return;
+            }
             e->markToRemove(true);
             app->graph.removeVertex((e->getName()));
-            auto message = std::make_shared<Message>(app->font, "Vertex removed", 1);
-            auto w_size = app->window.getSize();
-            message->setPosition((float) w_size.x / 2, (float) w_size.y - 100);
-            app->guiEventDispatcher->addEntity(message);
+            app->createMessage("Vertex removed", 0.5f);
         };
         Application *app;
-        Entity* e;
+        Entity *e;
     };
+
     friend class EntityBounder;
+    void updateArrows(const sf::Time &dt);
+
     std::shared_ptr<EntityBounder> entityBounder;
+    std::list<std::shared_ptr<Arrow>> arrows;
 public:
     void run();
 

@@ -9,6 +9,9 @@
 
 class Arrow : public Entity {
     Entity *start;
+
+
+private:
     Entity *end;
     size_t order1;
     size_t order2;
@@ -21,6 +24,10 @@ class Arrow : public Entity {
 
 public:
     Arrow(Entity *targetStart, Entity *targetEnd, const sf::Color &color = sf::Color::Black);
+
+    Entity *getStart() const;
+
+    Entity *getEnd() const;
 
     sf::FloatRect getGlobalBounds() const override;
 

@@ -5,12 +5,13 @@
 #ifndef DISCRETEMATHLAB3_ENTITYBOUNDER_H
 #define DISCRETEMATHLAB3_ENTITYBOUNDER_H
 #include <Arrow.h>
-
 class Application;
 class EntityBounder {
 public:
+    friend class Application;
     explicit EntityBounder(Application* application);
     void pushEntity(Entity* e);
+    bool isBounding() const;
 private:
 
     Entity* first;

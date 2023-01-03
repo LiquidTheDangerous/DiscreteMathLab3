@@ -54,12 +54,12 @@ Application::Application(int width, int height, const std::string &title) :
         auto e = std::make_unique<VertexEntity>(this->font, text, this->mppWorldPos);
         e->getSignal(signals::onMiddleMouseClicked).addSlot(
                 Application::ByPressingRightMouseButtonOnVertex(this, e.get()));
-        e->getSignal(signals::onRightMouseClicked).addSlot([this,entity{e.get()}](void *) {
+        e->getSignal(signals::onRightMouseClicked).addSlot([this, entity{e.get()}](void *) {
             this->entityBounder->pushEntity(entity);
         });
         auto pos = mppWorldPos->getMousePosition();
         e->followMouse(0, 0);
-        e->setPosition(pos.first,pos.second);
+        e->setPosition(pos.first, pos.second);
         this->mouseEventDispatcher->addEntity(std::move(e));
         this->graph.addVertex(text);
         this->createMessage("Vertex created", 0.5f);
@@ -101,8 +101,21 @@ void Application::processEvents(sf::Event &event, const sf::Time &dt) {
 void Application::update(const sf::Time &dt) {
 
     this->mouseEventDispatcher->update(dt.asSeconds());
-//    std::cout << "SIZE : " << this->mouseEventDispatcher->getEntitiesSize() << std::endl;
+    updateArrows(dt);
+
     this->guiEventDispatcher->update(dt.asSeconds());
+}
+
+void Application::updateArrows(const sf::Time &dt) {
+    bool rm = false;
+
+    for (auto &item: arrows) {
+        item->update(dt.asSeconds());
+         rm |= item->needsRemoved();
+    }
+    if (rm){
+        arrows.remove_if([](auto& item)->bool{return item->needsRemoved();});
+    }
 }
 
 void Application::render(const sf::Time &dt) {
@@ -110,6 +123,9 @@ void Application::render(const sf::Time &dt) {
     this->window.setView(this->view);
     this->window.draw(*this->mouseEventDispatcher);
 
+    for (auto &item: this->arrows) {
+        this->window.draw(*item);
+    }
 
     this->window.setView(this->gui_view);
     this->window.draw(*this->guiEventDispatcher);
