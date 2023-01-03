@@ -11,7 +11,7 @@
 #include <EntityEventDispatcherImpl.h>
 #include <Graph.h>
 #include <Message.h>
-
+#include <EntityBounder.h>
 class Application {
 private:
     sf::RenderWindow window;
@@ -52,7 +52,8 @@ private:
         Application *app;
         Entity* e;
     };
-
+    friend class EntityBounder;
+    std::shared_ptr<EntityBounder> entityBounder;
 public:
     void run();
 

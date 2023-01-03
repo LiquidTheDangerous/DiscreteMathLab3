@@ -113,3 +113,7 @@ void EntityEventDispatcherImpl::removeEntities() {
     });
     this->entities.erase(iter,this->entities.end());
 }
+
+std::size_t EntityEventDispatcherImpl::getEntitiesSize() const {
+    return this->entities.size();
+}

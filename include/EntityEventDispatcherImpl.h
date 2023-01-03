@@ -44,6 +44,8 @@ public:
 
     void update(float dt) override;
 
+    std::size_t getEntitiesSize() const override;
+
     void markToRemove(bool remove) override;
 
     bool needsRemoved() const override;

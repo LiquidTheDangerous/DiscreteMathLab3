@@ -5,6 +5,7 @@
 #include <VertexEntity.h>
 #include <EntityEventDispatcherImpl.h>
 #include <MousePositionProvider.h>
+#include <iostream>
 
 void VertexEntity::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     states.transform *= this->getTransform();
@@ -21,7 +22,7 @@ VertexEntity::VertexEntity(sf::Font &font, const std::string &name, std::shared_
     this->circle.move(-20.f, -20.f);
     this->circle.setFillColor(sf::Color::Red);
     this->mpp = std::move(mpp);
-
+    this->rm_flag = false;
     this->getSignal(signals::onLeftMouseClicked).addSlot([this](void*) {
 
         this->followMouse(0, 0);
@@ -61,6 +62,8 @@ void VertexEntity::unfollowMouse() {
 }
 
 void VertexEntity::update(float dt) {
+//    std::cout << this->getName() << std::endl;
+//    std::cout << this->getPosition().x << ' ' << this->getPosition().y << std::endl;
     if (!this->followsMouse)
         return;
     auto mp = this->mpp->getMousePosition();
@@ -72,6 +75,7 @@ bool VertexEntity::isFollowedMouse() const {
 }
 
 void VertexEntity::markToRemove(bool remove) {
+    this->signals.emit(signals::onDelete,nullptr);
     this->rm_flag = remove;
 }
 

@@ -95,6 +95,7 @@ void Label::reinitLine() {
 }
 
 void Label::markToRemove(bool remove) {
+    this->signals.emit(signals::onDelete,nullptr);
     this->rm_flag = remove;
 }
 
