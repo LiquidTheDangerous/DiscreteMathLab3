@@ -7,7 +7,9 @@
 #include <MousePositionProviderImpl.h>
 #include <Label.h>
 #include <Message.h>
+#include <GraphHelpers.h>
 #include <Arrow.h>
+#include <ColorHelpers.h>
 
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title),
@@ -63,6 +65,11 @@ Application::Application(int width, int height, const std::string &title) :
         this->mouseEventDispatcher->addEntity(std::move(e));
         this->graph.addVertex(text);
         this->createMessage("Vertex created", 0.5f);
+        this->colorizeVertices();
+    });
+
+    this->eventDispatcher.addListenerOnKeyPressedEvent(sf::Keyboard::Space, [this](const sf::Time &dt) {
+        this->colorizeVertices();
     });
 
 
@@ -82,6 +89,23 @@ void Application::run() {
         this->processEvents(event, dt);
         this->update(dt);
         this->render(dt);
+    }
+
+}
+
+void Application::colorizeVertices() const {
+    auto components = GraphHelpers::BoundComponents(graph);
+    auto step = 1.f / (float) components.size();
+    auto start = 0.f;
+    for (const auto &component: components) {
+        for (const auto &vertexName: component) {
+            auto f_vertex = dynamic_cast<VertexEntity *>(mouseEventDispatcher->getEntityByName(vertexName));
+            if (f_vertex) {
+                f_vertex->setDefaultColor(
+                        ColorHelpers::interpolate(sf::Color::Red, sf::Color::Magenta, start, ColorHelpers::linear));
+            }
+        }
+        start += step;
     }
 }
 
@@ -111,10 +135,10 @@ void Application::updateArrows(const sf::Time &dt) {
 
     for (auto &item: arrows) {
         item->update(dt.asSeconds());
-         rm |= item->needsRemoved();
+        rm |= item->needsRemoved();
     }
-    if (rm){
-        arrows.remove_if([](auto& item)->bool{return item->needsRemoved();});
+    if (rm) {
+        arrows.remove_if([](auto &item) -> bool { return item->needsRemoved(); });
     }
 }
 
@@ -123,14 +147,18 @@ void Application::render(const sf::Time &dt) {
     this->window.setView(this->view);
     this->window.draw(*this->mouseEventDispatcher);
 
-    for (auto &item: this->arrows) {
-        this->window.draw(*item);
-    }
+    drawArrows();
 
     this->window.setView(this->gui_view);
     this->window.draw(*this->guiEventDispatcher);
 
     this->window.display();
+}
+
+void Application::drawArrows() {
+    for (auto &item: arrows) {
+        window.draw(*item);
+    }
 }
 
 void Application::createMessage(const std::string &text, float ttl) {

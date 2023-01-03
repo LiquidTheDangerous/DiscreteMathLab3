@@ -46,7 +46,7 @@ private:
 
         void operator()(void *param) {
             if (app->entityBounder->isBounding()) {
-                app->createMessage("Cannot remove vertex while creating edge",0.5f);
+                app->createMessage("Cannot remove vertex while creating edge", 0.5f);
                 return;
             }
             e->markToRemove(true);
@@ -58,10 +58,16 @@ private:
     };
 
     friend class EntityBounder;
+
     void updateArrows(const sf::Time &dt);
+
+    void drawArrows();
 
     std::shared_ptr<EntityBounder> entityBounder;
     std::list<std::shared_ptr<Arrow>> arrows;
+
+    void colorizeVertices() const;
+
 public:
     void run();
 

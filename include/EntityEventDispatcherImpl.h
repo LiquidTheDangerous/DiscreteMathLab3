@@ -50,6 +50,8 @@ public:
 
     bool needsRemoved() const override;
 
+    Entity *getEntityByName(const std::string &name) const override;
+
 private:
     void removeEntities();
     std::shared_ptr<MousePositionProvider> mousePositionProvider;

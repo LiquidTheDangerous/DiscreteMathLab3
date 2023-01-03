@@ -19,6 +19,9 @@ private:
     sf::Text text;
     std::pair<float, float> mouse_offset;
     std::shared_ptr<MousePositionProvider> mpp;
+    sf::Color defaultColor;
+    sf::Color hoverColor;
+
     bool followsMouse = false;
     bool rm_flag;
 
@@ -36,6 +39,14 @@ public:
     bool isFollowedMouse() const;
 
     void update(float dt) override;
+
+    void setDefaultColor(const sf::Color &color);
+
+    sf::Color getDefaultColor() const;
+
+    void setHoverColor(const sf::Color &color);
+
+    sf::Color getHoverColor() const;
 
     sf::FloatRect getGlobalBounds() const override;
 

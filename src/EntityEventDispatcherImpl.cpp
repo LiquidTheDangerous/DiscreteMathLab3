@@ -117,3 +117,15 @@ void EntityEventDispatcherImpl::removeEntities() {
 std::size_t EntityEventDispatcherImpl::getEntitiesSize() const {
     return this->entities.size();
 }
+
+Entity *EntityEventDispatcherImpl::getEntityByName(const std::string &name) const {
+    auto iter = std::find_if(this->entities.begin(), this->entities.end(), [&name](const auto& entity)->bool
+    {
+        return entity->getName() == name;
+    });
+    if (iter == this->entities.end()){
+        return nullptr;
+    }
+
+    return iter->get();
+}

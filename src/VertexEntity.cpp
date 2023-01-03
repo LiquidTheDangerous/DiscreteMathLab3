@@ -23,19 +23,21 @@ VertexEntity::VertexEntity(sf::Font &font, const std::string &name, std::shared_
     this->circle.setFillColor(sf::Color::Red);
     this->mpp = std::move(mpp);
     this->rm_flag = false;
-    this->getSignal(signals::onLeftMouseClicked).addSlot([this](void*) {
+    this->defaultColor = sf::Color::Blue;
+    this->hoverColor = sf::Color::Red;
+    this->getSignal(signals::onLeftMouseClicked).addSlot([this](void *) {
 
         this->followMouse(0, 0);
     });
-    this->getSignal(signals::onLeftMouseReleased).addSlot([this](void*) {
+    this->getSignal(signals::onLeftMouseReleased).addSlot([this](void *) {
         this->unfollowMouse();
     });
-    this->getSignal(signals::onMouseEntered).addSlot([this](void*) {
+    this->getSignal(signals::onMouseEntered).addSlot([this](void *) {
         auto name = this->getName();
-        this->setCircleFillColor(sf::Color::Black);
+        this->setCircleFillColor(this->hoverColor);
     });
-    this->getSignal(signals::onMouseLeaved).addSlot([this](void*) {
-        this->setCircleFillColor(sf::Color::Red);
+    this->getSignal(signals::onMouseLeaved).addSlot([this](void *) {
+        this->setCircleFillColor(this->defaultColor);
     });
 }
 
@@ -54,7 +56,7 @@ void VertexEntity::setMousePositionProvider(std::shared_ptr<MousePositionProvide
 
 void VertexEntity::followMouse(float offset_x, float offset_y) {
     this->followsMouse = true;
-    this->mouse_offset = std::make_pair(offset_x,offset_y);
+    this->mouse_offset = std::make_pair(offset_x, offset_y);
 }
 
 void VertexEntity::unfollowMouse() {
@@ -67,7 +69,7 @@ void VertexEntity::update(float dt) {
     if (!this->followsMouse)
         return;
     auto mp = this->mpp->getMousePosition();
-    this->setPosition(mp.first + this->mouse_offset.first,mp.second + this->mouse_offset.second);
+    this->setPosition(mp.first + this->mouse_offset.first, mp.second + this->mouse_offset.second);
 }
 
 bool VertexEntity::isFollowedMouse() const {
@@ -75,7 +77,7 @@ bool VertexEntity::isFollowedMouse() const {
 }
 
 void VertexEntity::markToRemove(bool remove) {
-    this->signals.emit(signals::onDelete,nullptr);
+    this->signals.emit(signals::onDelete, nullptr);
     this->rm_flag = remove;
 }
 
@@ -83,4 +85,20 @@ bool VertexEntity::needsRemoved() const {
     return this->rm_flag;
 }
 
+void VertexEntity::setDefaultColor(const sf::Color &color) {
+    this->defaultColor = color;
+    this->circle.setFillColor(color);
+}
+
+sf::Color VertexEntity::getDefaultColor() const {
+    return this->defaultColor;
+}
+
+void VertexEntity::setHoverColor(const sf::Color &color) {
+    this->hoverColor = color;
+}
+
+sf::Color VertexEntity::getHoverColor() const{
+    return this->hoverColor;
+}
 

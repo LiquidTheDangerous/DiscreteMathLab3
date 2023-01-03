@@ -23,14 +23,16 @@ void EntityBounder::pushEntity(Entity *e) {
 
         if (iter != app->arrows.end()) {
             (*iter)->markToRemove(true);
+            app->graph.disconnect(first->getName(), second->getName());
             app->createMessage("Edge removed", 0.5f);
         } else {
             auto arrow = std::make_shared<Arrow>(first, second);
             app->arrows.push_back(arrow);
+            app->graph.connect(first->getName(), second->getName());
             app->createMessage("Edge created", 0.5f);
 
         }
-
+        app->colorizeVertices();
         this->first = nullptr;
         this->second = nullptr;
     } else {

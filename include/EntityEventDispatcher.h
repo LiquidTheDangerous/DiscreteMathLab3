@@ -17,7 +17,7 @@ public:
 
     virtual void handleEvent(const sf::Event &event) = 0;
 
-
+    virtual Entity* getEntityByName(const std::string& name) const = 0;
 
     virtual std::size_t getEntitiesSize() const = 0;
 };
