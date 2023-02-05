@@ -71,3 +71,69 @@ std::set<std::set<std::string>> GraphHelpers::BoundComponents(const Graph &graph
     }
     return result;
 }
+
+std::optional<std::map<int, std::set<std::string>>> GraphHelpers::TopologicalSort(const Graph &graph) {
+    using ReturnType = std::optional<std::map<int,std::set<std::string>>>;
+    if (graph.getVerticesCount() == 0){
+        return std::nullopt;
+    }
+    if (HasCycles(graph)){
+        return std::nullopt;
+    }
+    auto result = std::map<int, std::set<std::string>>();
+    auto incidentMatrix = graph.getIncidentMatrix();
+    auto& matrix = incidentMatrix.first;
+    auto& map = incidentMatrix.second;
+    auto c = 0;
+
+    while (true){
+        auto nullColumns = findNullColumns(matrix);
+        if (nullColumns.empty()){
+            break;
+        }
+        auto vertexSet = std::set<std::string>();
+        for (auto&& col : nullColumns){
+            vertexSet.emplace(map[col]);
+        }
+        result[c++] = std::move(vertexSet);
+        removeNullColumns(matrix,nullColumns);
+
+    }
+    return ReturnType{std::move(result)};
+}
+
+bool GraphHelpers::HasCycles(const Graph &graph) {
+    auto components = BoundComponents(graph);
+    auto vCount = graph.getVerticesCount();
+    return  components.size() != vCount;
+}
+
+std::list<std::size_t> GraphHelpers::findNullColumns(const std::vector<std::vector<int>> &incidentMatrix) {
+    auto result = std::list<std::size_t>();
+    for (int j = 0; j < incidentMatrix.size(); ++j){
+        bool flag = true;
+        for (int i = 0; i < incidentMatrix.size() && flag; ++i){
+            flag &= incidentMatrix[i][j]==0;
+        }
+        if (flag){
+            result.emplace_back(j);
+        }
+    }
+    return result;
+}
+
+void GraphHelpers::removeNullColumns(std::vector<std::vector<int>> &incidentMatrix,
+                                     const std::list<std::size_t> &nullColumns) {
+    for (auto&& j : nullColumns){
+        for (auto && i : incidentMatrix){
+            i[j] = removed;
+        }
+    }
+    for (auto&& i : nullColumns){
+        for (std::size_t j = 0; j < incidentMatrix.size();++j){
+            if (incidentMatrix[i][j] != removed){
+                incidentMatrix[i][j] = null;
+            }
+        }
+    }
+}

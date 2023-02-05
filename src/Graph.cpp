@@ -3,6 +3,7 @@
 //
 
 #include <Graph.h>
+#include <iostream>
 
 std::list<std::pair<Vertex, std::list<Graph::edge>>> Graph::getVertices() const {
     return {this->vertices.begin(), this->vertices.end()};
@@ -78,16 +79,45 @@ std::set<std::string> Graph::getVerticesName() const {
 }
 
 void Graph::removeVertex(const std::string &vertexName) {
-    for (auto& e: this->vertices) {
-        auto iter = std::remove_if(e.second.begin(), e.second.end(), [&vertexName](Graph::edge &item)->bool {
+    for (auto &e: this->vertices) {
+        auto iter = std::remove_if(e.second.begin(), e.second.end(), [&vertexName](Graph::edge &item) -> bool {
             return item.first.getName() == vertexName;
         });
-        e.second.erase(iter,e.second.end());
+        e.second.erase(iter, e.second.end());
     }
 
-    auto count = std::erase_if(this->vertices,[&vertexName](const auto& item)->bool
-    {
-        auto const& [key,val] = item;
+    auto count = std::erase_if(this->vertices, [&vertexName](const auto &item) -> bool {
+        auto const &[key, val] = item;
         return key.getName() == vertexName;
     });
+}
+
+std::size_t Graph::getVerticesCount() const {
+    return this->vertices.size();
+}
+
+std::pair<std::vector<std::vector<int>>, std::map<std::size_t, std::string>> Graph::getIncidentMatrix() const{
+    auto matrixResult = std::vector<std::vector<int>>(this->getVerticesCount(),
+                                                      std::vector<int>(this->getVerticesCount(), 0));
+    auto map = std::map<std::size_t, std::string>();
+    std::size_t c = 0;
+    for (auto &&v: this->vertices) {
+        map.emplace(c++, v.first.getName());
+    }
+    int i = 0;
+    for (auto &&v1: this->vertices) {
+        int j = 0;
+        for (auto &&v2: map) {
+            if (std::find_if(v1.second.begin(), v1.second.end(), [&v2](const Graph::edge &e) -> bool {
+                return e.first.getName() == v2.second;
+            }) != v1.second.end()) {
+                matrixResult[i][j] = 1;
+            } else {
+                matrixResult[i][j] = 0;
+            }
+            ++j;
+        }
+        ++i;
+    }
+    return {std::move(matrixResult), std::move(map)};
 }

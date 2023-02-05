@@ -38,6 +38,10 @@ public:
 
     [[nodiscard]] std::set<std::string> getVerticesName() const;
 
+    [[nodiscard]] std::size_t getVerticesCount() const;
+
+    [[nodiscard]] std::pair<std::vector<std::vector<int>>, std::map<std::size_t, std::string>> getIncidentMatrix() const;
+
 private:
     std::map<VertexT, std::list<edge>> vertices;
 };

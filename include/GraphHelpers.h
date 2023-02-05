@@ -9,14 +9,23 @@
 #include <set>
 #include <Vertex.h>
 #include <Graph.h>
+#include <optional>
 
 class GraphHelpers {
-public:
+private:
+
+    static constexpr int null = 0;
+    static constexpr int removed = 1<<30;
+
     static void _dfs(const Graph& graph, std::set<std::string>& visited, const std::string &startVertexName);
+    static std::list<std::size_t> findNullColumns(const std::vector<std::vector<int>>& incidentMatrix);
+    static void removeNullColumns(std::vector<std::vector<int>>& incidentMatrix,const std::list<std::size_t>& nullColumns);
 public:
     static std::map<std::string,std::map<std::string,bool>> ReachMatrix(const Graph& graph);
     static std::map<std::string,std::map<std::string,bool>> StrongConnectMatrix(const Graph& graph);
     static std::set<std::set<std::string>> BoundComponents(const Graph& graph);
+    static bool HasCycles(const Graph& graph);
+    static std::optional<std::map<int, std::set<std::string>>> TopologicalSort(const Graph& graph);
 };
 
 
