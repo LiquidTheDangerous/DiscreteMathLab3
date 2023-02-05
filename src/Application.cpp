@@ -11,13 +11,14 @@
 #include <Arrow.h>
 #include <ColorHelpers.h>
 #include "GuiComponent.hpp"
+#include <ViewPositionProviderImpl.hpp>
 
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title, sf::Style::Default),
         bgColor(sf::Color::White),
         viewMoveSpeed(200.f),
         viewMouseScrollSpeed(4.f),
-        viewRotationSpeed(4.f){
+        viewRotationSpeed(4.f) {
     this->entityBounder = std::make_shared<EntityBounder>(this);
     this->mouseEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
     this->guiEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
@@ -90,8 +91,39 @@ Application::Application(int width, int height, const std::string &title) :
     button->setOnClickedBgColor(onClickedButtonColor);
     button->setInViewPositionFactors(1.f, 0.5f);
     button->setPosition(-100, 0);
-    button->getSignal(signals::onLeftMouseClicked).addSlot([](void *) {
-        //TODO:Add top sort
+    button->getSignal(signals::onLeftMouseClicked).addSlot([this](void *) {
+        auto sort = GraphHelpers::TopologicalSort(this->graph);
+        if (!sort) {
+            this->createMessage("Couldn't sort", 0.5f);
+            return;
+        }
+        auto &map = *sort;
+        auto windowSize = this->window.getSize();
+        auto &width = windowSize.x;
+        auto &height = windowSize.y;
+        auto stepHeight = height / (map.size() + 1);
+        unsigned long long stepWidth{};
+        std::size_t currStepY = 1;
+        for (auto &order: map) {
+            stepWidth = width / (order.second.size() + 1);
+            std::size_t currStepX = 1;
+            for (auto &vertexName: order.second) {
+                auto x = stepWidth * currStepX;
+                auto y = stepHeight * currStepY;
+
+                sf::Vector2f posInView =
+                        this->window.mapPixelToCoords(
+                                sf::Vector2i(
+                                        static_cast<int>(x),
+                                        static_cast<int>(y)),
+                                this->view);
+                auto entity = this->mouseEventDispatcher->getEntityByName(vertexName);
+                entity->setPosition(posInView);
+                ++currStepX;
+            }
+            ++currStepY;
+        }
+
     });
 
     this->guiEventDispatcher->addEntity(button);
@@ -117,9 +149,9 @@ Application::Application(int width, int height, const std::string &title) :
                                              [this](const sf::Event &event, const sf::Time &dt) {
                                                  auto delta = event.mouseWheelScroll.delta;
                                                  if (delta > 0) {
-                                                     this->view.zoom(1 + this->viewMouseScrollSpeed*dt.asSeconds());
+                                                     this->view.zoom(1 + this->viewMouseScrollSpeed * dt.asSeconds());
                                                  } else {
-                                                     this->view.zoom(1 - this->viewMouseScrollSpeed*dt.asSeconds());
+                                                     this->view.zoom(1 - this->viewMouseScrollSpeed * dt.asSeconds());
                                                  }
                                              });
 }
