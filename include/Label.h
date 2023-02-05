@@ -7,8 +7,8 @@
 
 #include <SFML/Graphics.hpp>
 #include "Entity.h"
-
-class Label : public Entity {
+#include <GuiComponent.hpp>
+class Label : public GUIComponent {
     std::string string_text;
     std::string placeholder;
     sf::Text text;
@@ -21,7 +21,7 @@ class Label : public Entity {
 public:
 
 
-    explicit Label(sf::Font &font, const std::string &placeholder, const std::string &text="");
+    explicit Label(sf::Font &font, const std::string &placeholder, sf::View &view, const std::string &text = "");
 
     void setString(const std::string& text);
 

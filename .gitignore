@@ -3,5 +3,5 @@ cmake-build-debug
 .idea
 classDiagramm.puml
 CMakeFiles
-
+build
 lib

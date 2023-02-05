@@ -6,6 +6,7 @@
 #include "Message.h"
 #include "EntityEventDispatcherImpl.h"
 void Message::update(float dt) {
+    GUIComponent::update(dt);
     if (ttl > 0){
         this->ttl -= dt;
     }else{
@@ -47,7 +48,8 @@ bool Message::needsRemoved() const {
     return this->rm_flag;
 }
 
-Message::Message(const sf::Font &font, const std::string &text, const float &ttl) {
+Message::Message(const sf::Font &font, const std::string &text, const float &ttl, sf::View &view):
+GUIComponent(view) {
     this->font = &font;
     this->text.setFillColor(sf::Color::Black);
     this->text.setString(text);

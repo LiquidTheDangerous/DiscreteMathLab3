@@ -17,10 +17,22 @@ public:
     virtual void update(float dt) = 0;
     virtual void markToRemove(bool remove) = 0;
     virtual bool needsRemoved()const = 0 ;
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "HidingNonVirtualFunction"
+    virtual void setPosition(float x, float y);
+    virtual void setPosition(const sf::Vector2f& );
+    virtual void move(float x, float y);
+    virtual void move(const sf::Vector2f& vect);
+#pragma clang diagnostic pop
+
 protected:
     friend class EntityEventDispatcherImpl;
     SignalContainer signals;
     std::string name;
+
+private:
+    using sf::Transformable::move;
+    using sf::Transformable::setPosition;
 };
 
 

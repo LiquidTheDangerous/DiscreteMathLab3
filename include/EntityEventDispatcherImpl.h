@@ -11,22 +11,10 @@
 #include <memory>
 #include <MousePositionProvider.h>
 #include <EntityEventDispatcher.h>
+#include <signals.hpp>
 #include <algorithm>
 
-enum signals {
-    onLeftMouseClicked,
-    onRightMouseClicked,
-    onMiddleMouseClicked,
-    onLeftMouseReleased,
-    onRightMouseReleased,
-    onMiddleMouseReleased,
-    onMouseEntered,
-    onMouseLeaved,
-    onEnteredText,
-    onEndEditingText,
-    onDelete,
-    signalsCount
-};
+
 
 class EntityEventDispatcherImpl :
         public EntityEventDispatcher {

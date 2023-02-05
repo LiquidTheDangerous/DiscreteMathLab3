@@ -19,7 +19,6 @@ private:
     sf::VertexArray line;
     sf::VertexArray arrow;
     float scale_arrow_factor = 20.f;
-
     void reinitArrow();
 
 public:

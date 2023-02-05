@@ -13,7 +13,7 @@ sf::FloatRect Label::getGlobalBounds() const {
 }
 
 void Label::update(float dt) {
-
+    GUIComponent::update(dt);
 }
 
 void Label::draw(sf::RenderTarget &target, sf::RenderStates states) const {
@@ -24,8 +24,10 @@ void Label::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     }
 }
 
-Label::Label(sf::Font &font, const std::string &placeholder, const std::string &text) :
-        line(sf::Lines, 2) {
+Label::Label(sf::Font &font, const std::string &placeholder, sf::View &view, const std::string &text) :
+        line(sf::Lines, 2),
+        GUIComponent(view),
+        rm_flag(false){
     this->text.setFont(font);
     this->text.setFillColor(sf::Color::Black);
     this->setPlaceholder(placeholder);
@@ -95,7 +97,9 @@ void Label::reinitLine() {
 }
 
 void Label::markToRemove(bool remove) {
-    this->signals.emit(signals::onDelete,nullptr);
+    if (remove){
+        this->signals.emit(signals::onDelete,nullptr);
+    }
     this->rm_flag = remove;
 }
 

@@ -19,3 +19,20 @@ sf::FloatRect Entity::getGlobalBounds() const {
     return {0.f,0.f,0.f,0.f};
 }
 
+void Entity::setPosition(float x, float y) {
+    Transformable::setPosition(x, y);
+}
+
+void Entity::setPosition(const sf::Vector2f & position) {
+    Transformable::setPosition(position);
+}
+
+void Entity::move(float x, float y) {
+    auto pos = this->getPosition();
+    this->setPosition(pos + sf::Vector2f(x,y));
+}
+
+void Entity::move(const sf::Vector2f &vect) {
+    this->move(vect.x,vect.y);
+}
+

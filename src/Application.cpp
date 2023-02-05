@@ -10,19 +10,22 @@
 #include <GraphHelpers.h>
 #include <Arrow.h>
 #include <ColorHelpers.h>
+#include "GuiComponent.hpp"
 
 Application::Application(int width, int height, const std::string &title) :
-        window(sf::VideoMode(width, height), title),
-        bgColor(sf::Color::White) {
+        window(sf::VideoMode(width, height), title, sf::Style::Default),
+        bgColor(sf::Color::White),
+        viewMoveSpeed(200.f),
+        viewMouseScrollSpeed(4) {
     this->entityBounder = std::make_shared<EntityBounder>(this);
     this->mouseEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
     this->guiEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
     this->window.setVerticalSyncEnabled(true);
     this->view = this->window.getDefaultView();
+
     this->gui_view = this->window.getDefaultView();
     this->mppGUI = std::make_shared<MousePositionProviderImpl>(&this->window, &this->gui_view);
     this->mppWorldPos = std::make_shared<MousePositionProviderImpl>(&this->window, &this->view);
-
     if (!this->font.loadFromFile("../res/Montserrat_Regular.ttf")) {
         std::cerr << "ERROR LOADING FONT" << std::endl;
     };
@@ -40,8 +43,8 @@ Application::Application(int width, int height, const std::string &title) :
                                              });
 
 
-    auto label = std::make_shared<Label>(this->font, "Enter Vertex Name");
-    label->move(600, 0);
+    auto label = std::make_shared<Label>(this->font, "Enter Vertex Name", this->gui_view);
+    label->setInViewPositionFactors(0.5, 0);
     label->getSignal(signals::onEndEditingText).addSlot([label{label.get()}, this](void *param) {
         auto text = label->getString();
         if (this->graph.contains(text)) {
@@ -78,6 +81,40 @@ Application::Application(int width, int height, const std::string &title) :
     this->guiEventDispatcher->setMousePositionProvider(mppGUI);
 
     this->guiEventDispatcher->addEntity(label);
+    auto buttonColor = sf::Color(238, 238, 228, 255);
+    auto onClickedButtonColor = sf::Color(238, 238, 228, 128);
+    auto button = std::make_shared<Button>(100.f, 50.f, this->font, "Sort", this->gui_view, sf::Color::Black,
+                                           buttonColor);
+    button->setDefaultBgColor(buttonColor);
+    button->setOnClickedBgColor(onClickedButtonColor);
+    button->setInViewPositionFactors(1.f, 0.5f);
+    button->setPosition(-100, 0);
+    button->getSignal(signals::onLeftMouseClicked).addSlot([](void *) {
+        std::cout << "Sorting";
+    });
+
+    this->guiEventDispatcher->addEntity(button);
+    this->eventDispatcher.addListenerOnKey(sf::Keyboard::D, [this](const sf::Time &dt) {
+        this->view.move(sf::Vector2f(this->viewMoveSpeed, 0.f) * dt.asSeconds());
+    });
+    this->eventDispatcher.addListenerOnKey(sf::Keyboard::W, [this](const sf::Time &dt) {
+        this->view.move(sf::Vector2f( 0.f,-this->viewMoveSpeed) * dt.asSeconds());
+    });
+    this->eventDispatcher.addListenerOnKey(sf::Keyboard::S, [this](const sf::Time &dt) {
+        this->view.move(sf::Vector2f( 0.f,this->viewMoveSpeed) * dt.asSeconds());
+    });
+    this->eventDispatcher.addListenerOnKey(sf::Keyboard::A, [this](const sf::Time &dt) {
+        this->view.move(sf::Vector2f(-this->viewMoveSpeed, 0.f) * dt.asSeconds());
+    });
+    this->eventDispatcher.addListenerOnEvent(sf::Event::MouseWheelScrolled,
+                                             [this](const sf::Event &event, const sf::Time &dt) {
+                                                 auto delta = event.mouseWheelScroll.delta;
+                                                 if (delta > 0) {
+                                                     this->view.zoom(1 + dt.asSeconds());
+                                                 } else {
+                                                     this->view.zoom(1 - dt.asSeconds());
+                                                 }
+                                             });
 }
 
 void Application::run() {
@@ -102,7 +139,7 @@ void Application::colorizeVertices() const {
             auto f_vertex = dynamic_cast<VertexEntity *>(mouseEventDispatcher->getEntityByName(vertexName));
             if (f_vertex) {
                 f_vertex->setDefaultColor(
-                        ColorHelpers::interpolate(sf::Color::Red, sf::Color::Magenta, start, ColorHelpers::linear));
+                        ColorHelpers::interpolate(sf::Color::Red, sf::Color(60, 0, 100), start, ColorHelpers::linear));
             }
         }
         start += step;
@@ -162,8 +199,7 @@ void Application::drawArrows() {
 }
 
 void Application::createMessage(const std::string &text, float ttl) {
-    auto message = std::make_shared<Message>(this->font, text, ttl);
-    auto w_size = this->window.getSize();
-    message->setPosition((float) w_size.x / 2, (float) w_size.y - 100);
+    auto message = std::make_shared<Message>(this->font, text, ttl, this->gui_view);
+    message->setInViewPositionFactors(0.5, 0.9f);
     this->guiEventDispatcher->addEntity(message);
 }

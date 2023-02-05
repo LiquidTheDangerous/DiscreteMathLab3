@@ -1,9 +1,9 @@
 #include <iostream>
 #include <Application.h>
-#include <Graph.h>
 
 int main() {
-    Application app(1280,720,"Graph");
+    auto app = Application(800,600,"title");
     app.run();
+
     return 0;
 }

@@ -7,8 +7,9 @@
 
 #include <string>
 #include <Entity.h>
+#include <GuiComponent.hpp>
 
-class Message : public Entity {
+class Message : public GUIComponent{
 private:
     const sf::Font *font;
     sf::Text text;
@@ -17,7 +18,7 @@ private:
     bool rm_flag;
 
 public:
-    Message(const sf::Font &font, const std::string &text, const float &ttl);
+    Message(const sf::Font &font, const std::string &text, const float &ttl, sf::View &view);
 
     void update(float dt) override;
 

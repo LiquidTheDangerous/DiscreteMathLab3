@@ -12,7 +12,7 @@
 #include <Graph.h>
 #include <Message.h>
 #include <EntityBounder.h>
-
+#include <Button.hpp>
 
 class Application {
 private:
@@ -52,6 +52,7 @@ private:
             e->markToRemove(true);
             app->graph.removeVertex((e->getName()));
             app->createMessage("Vertex removed", 0.5f);
+            app->colorizeVertices();
         };
         Application *app;
         Entity *e;
@@ -67,6 +68,9 @@ private:
     std::list<std::shared_ptr<Arrow>> arrows;
 
     void colorizeVertices() const;
+
+    float viewMoveSpeed;
+    float viewMouseScrollSpeed;
 
 public:
     void run();
