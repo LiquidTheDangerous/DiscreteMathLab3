@@ -71,6 +71,7 @@ private:
 
     float viewMoveSpeed;
     float viewMouseScrollSpeed;
+    float viewRotationSpeed;
 
 public:
     void run();

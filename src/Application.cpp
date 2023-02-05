@@ -16,7 +16,8 @@ Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title, sf::Style::Default),
         bgColor(sf::Color::White),
         viewMoveSpeed(200.f),
-        viewMouseScrollSpeed(4) {
+        viewMouseScrollSpeed(4.f),
+        viewRotationSpeed(4.f){
     this->entityBounder = std::make_shared<EntityBounder>(this);
     this->mouseEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
     this->guiEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
@@ -90,7 +91,7 @@ Application::Application(int width, int height, const std::string &title) :
     button->setInViewPositionFactors(1.f, 0.5f);
     button->setPosition(-100, 0);
     button->getSignal(signals::onLeftMouseClicked).addSlot([](void *) {
-        std::cout << "Sorting";
+        //TODO:Add top sort
     });
 
     this->guiEventDispatcher->addEntity(button);
@@ -98,21 +99,27 @@ Application::Application(int width, int height, const std::string &title) :
         this->view.move(sf::Vector2f(this->viewMoveSpeed, 0.f) * dt.asSeconds());
     });
     this->eventDispatcher.addListenerOnKey(sf::Keyboard::W, [this](const sf::Time &dt) {
-        this->view.move(sf::Vector2f( 0.f,-this->viewMoveSpeed) * dt.asSeconds());
+        this->view.move(sf::Vector2f(0.f, -this->viewMoveSpeed) * dt.asSeconds());
     });
     this->eventDispatcher.addListenerOnKey(sf::Keyboard::S, [this](const sf::Time &dt) {
-        this->view.move(sf::Vector2f( 0.f,this->viewMoveSpeed) * dt.asSeconds());
+        this->view.move(sf::Vector2f(0.f, this->viewMoveSpeed) * dt.asSeconds());
     });
     this->eventDispatcher.addListenerOnKey(sf::Keyboard::A, [this](const sf::Time &dt) {
         this->view.move(sf::Vector2f(-this->viewMoveSpeed, 0.f) * dt.asSeconds());
+    });
+    this->eventDispatcher.addListenerOnKey(sf::Keyboard::Q, [this](const sf::Time &dt) {
+        this->view.rotate(this->viewRotationSpeed * dt.asSeconds());
+    });
+    this->eventDispatcher.addListenerOnKey(sf::Keyboard::E, [this](const sf::Time &dt) {
+        this->view.rotate(-this->viewRotationSpeed * dt.asSeconds());
     });
     this->eventDispatcher.addListenerOnEvent(sf::Event::MouseWheelScrolled,
                                              [this](const sf::Event &event, const sf::Time &dt) {
                                                  auto delta = event.mouseWheelScroll.delta;
                                                  if (delta > 0) {
-                                                     this->view.zoom(1 + dt.asSeconds());
+                                                     this->view.zoom(1 + this->viewMouseScrollSpeed*dt.asSeconds());
                                                  } else {
-                                                     this->view.zoom(1 - dt.asSeconds());
+                                                     this->view.zoom(1 - this->viewMouseScrollSpeed*dt.asSeconds());
                                                  }
                                              });
 }
