@@ -104,10 +104,13 @@ std::pair<std::vector<std::vector<int>>, std::vector<std::string>> Graph::getInc
     for (auto &&v1: this->vertices) {
         int j = 0;
         for (auto &&v2: map) {
-            if (std::find_if(v1.second.begin(), v1.second.end(), [&v2](const Graph::edge &e) -> bool {
-                return e.first.getName() == v2;
-            }) != v1.second.end()) {
-                matrixResult[i][j] = 1;
+            const auto iter = std::find_if(v1.second.begin(), v1.second.end(),
+                                                                     [&v2](const Graph::edge &e) -> bool {
+                                                                         return e.first.getName() == v2;
+                                                                     });
+
+            if (iter != v1.second.end()) {
+                matrixResult[i][j] = iter->second;
             } else {
                 matrixResult[i][j] = 0;
             }
@@ -148,7 +151,7 @@ bool Graph::setW(const std::string &sourceName, const std::string &destinationNa
     return true;
 }
 
-std::optional<int> Graph::getW(const std::string &sourceName, const std::string &destinationName) {
+std::optional<int> Graph::getW(const std::string &sourceName, const std::string &destinationName) const{
     auto sourceIt = this->vertices.find(VertexT(sourceName));
     if (sourceIt == this->vertices.end())
         return std::nullopt;

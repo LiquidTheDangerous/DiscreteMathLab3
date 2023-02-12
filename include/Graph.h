@@ -34,7 +34,7 @@ public:
 
     bool setW(const std::string& sourceName, const std::string& destinationName, int w);
 
-    std::optional<int> getW(const std::string& sourceName, const std::string& destinationName);
+    std::optional<int> getW(const std::string& sourceName, const std::string& destinationName) const;
 
     bool disconnect(const std::string &sourceName, const std::string &destinationName);
 

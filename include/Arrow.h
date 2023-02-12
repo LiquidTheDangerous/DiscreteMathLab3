@@ -65,6 +65,10 @@ public:
 
     void setLerpFactor(float lerpFactor);
 
+    void setLineColor(const sf::Color& color);
+
+    sf::Color getLineColor() const;
+
     void setTextValidator(const std::function<bool(const char&)>& func);
 
     std::size_t getLabelTextSize();

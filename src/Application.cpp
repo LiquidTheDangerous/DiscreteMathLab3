@@ -23,7 +23,9 @@ Application::Application(int width, int height, const std::string &title) :
         bgColor(sf::Color::White),
         viewMoveSpeed(200.f),
         viewMouseScrollSpeed(4.f),
-        viewRotationSpeed(4.f) {
+        viewRotationSpeed(4.f),
+        pathColor(sf::Color::Green),
+        defaultColor(sf::Color::Black) {
     ImGui::SFML::Init(window);
     this->entityBounder = std::make_shared<EntityBounder>(this);
     this->mouseEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
@@ -186,21 +188,23 @@ void Application::imguiWindow() {
     ImGui::Begin("Functions");
     ImGui::StyleColorsDark();
 
+#pragma region createVertex
     static char buf[255];
     static const char *startVertexName = nullptr;
     ImGui::InputText("- vertex name", buf, 255);
     if (ImGui::Button("Create vertex")) {
         this->createVertexByName(buf);
     }
+#pragma endregion
+#pragma region top-sort
     if (ImGui::Button("Topological sort")) {
         onSortBtnClicked(nullptr);
     }
-
-
+#pragma endregion
+#pragma region DijkstraButton
     static bool flag = false;
     static auto dijkstraResult = std::optional<std::map<std::string, int>>(std::nullopt);
-#pragma region DijkstraButton
-    if (ImGui::Button("Dijksta")) {
+    if (ImGui::Button("Dijkstra")) {
         flag ^= true;
         if (flag) {
             if (startVertexName != nullptr) {
@@ -211,6 +215,7 @@ void Application::imguiWindow() {
     ImGui::SameLine();
 #pragma endregion
 #pragma region VertexList
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
     if (ImGui::BeginCombo("Start Vertex Name", startVertexName)) {
         for (auto &e: this->mouseEventDispatcher->getEntities()) {
             bool is_selected = (startVertexName == e->getName().c_str());
@@ -224,6 +229,7 @@ void Application::imguiWindow() {
         ImGui::EndCombo();
     }
 #pragma endregion
+#pragma region dijkstra-logic
     if (flag) {
         if (!dijkstraResult) {
             if (startVertexName == nullptr) {
@@ -260,9 +266,109 @@ void Application::imguiWindow() {
             }
         }
     }
-
+#pragma endregion
+#pragma region source-destination
+    static const char *source = nullptr;
+    static const char *destination = nullptr;
+    ImGui::Text("source");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
+    if (ImGui::BeginCombo("##", source)) {
+        for (auto &e: this->mouseEventDispatcher->getEntities()) {
+            bool is_selected = (source == e->getName().c_str());
+            if (ImGui::Selectable(e->getName().c_str(), is_selected)) {
+                source = e->getName().c_str();
+            }
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    ImGui::Text("destination");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
+    if (ImGui::BeginCombo("###", destination)) {
+        for (auto &e: this->mouseEventDispatcher->getEntities()) {
+            bool is_selected = (destination == e->getName().c_str());
+            if (ImGui::Selectable(e->getName().c_str(), is_selected)) {
+                destination = e->getName().c_str();
+            }
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+#pragma endregion
+#pragma region pathButton
+    static std::optional<std::list<std::string>> path = std::nullopt;
+    static bool pathFlag = false;
+    if (ImGui::Button("path ")) {
+        path = GraphHelpers::DijkstraPath(this->graph, source, destination);
+        if (path) {
+            pathFlag ^= true;
+        }
+    }
+#pragma endregion
+#pragma region pathButtonLogic
+    if (pathFlag && path) {
+        setPathColor(path.value());
+        pathFlag = false;
+        path = std::nullopt;
+    }
+#pragma endregion
+#pragma region remove-path-button
+    if (ImGui::Button("Remove paths")) {
+        for (auto &e: this->arrowHolder->getEntities()) {
+            auto *arrow = static_cast<Arrow *>(e.get());
+            arrow->setLineColor(this->defaultColor);
+        }
+    }
+#pragma endregion
 
     ImGui::End();
+}
+
+void Application::setPathColor(std::list<std::string> &path) {
+    auto iter = path.begin();
+    auto end = std::next(iter, (std::ptrdiff_t) (path.size() - 1));
+    for (; iter != end; ++iter) {
+        auto &current = iter;
+        auto next = std::next(iter);
+        auto &firstName = *current;
+        auto &secondName = *next;
+        auto foundFirst = std::find_if(arrowHolder->getEntities().begin(),
+                                       arrowHolder->getEntities().end(),
+                                       [&firstName, &secondName](const std::shared_ptr<Entity> &e) -> bool {
+                                           auto *arrow = dynamic_cast<Arrow *>(e.get());
+                                           if (!arrow) {
+                                               return false;
+                                           }
+                                           return arrow->getSourceName() == firstName &&
+                                                  arrow->getDestinationName() == secondName;
+                                       });
+        auto foundSecond = std::find_if(arrowHolder->getEntities().begin(),
+                                        arrowHolder->getEntities().end(),
+                                        [&firstName, &secondName](const std::shared_ptr<Entity> &e) -> bool {
+                                            auto *arrow = dynamic_cast<Arrow *>(e.get());
+                                            if (!arrow) {
+                                                return false;
+                                            }
+                                            return arrow->getSourceName() == secondName &&
+                                                   arrow->getDestinationName() == firstName;
+                                        });
+        if (foundFirst != arrowHolder->getEntities().end()) {
+            auto *arrow = static_cast<Arrow *>(foundFirst->get());
+            arrow->setLineColor(pathColor);
+        }
+        if (foundSecond != arrowHolder->getEntities().end()) {
+            auto *arrow = static_cast<Arrow *>(foundSecond->get());
+            arrow->setLineColor(pathColor);
+        }
+
+    }
 }
 
 void Application::drawArrows() {

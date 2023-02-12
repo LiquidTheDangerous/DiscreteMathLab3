@@ -167,4 +167,12 @@ void Arrow::setShowText(bool showText) {
     show_text = showText;
 }
 
+void Arrow::setLineColor(const sf::Color &color) {
+    this->line[0].color = color;
+    this->line[1].color = color;
+}
+
+sf::Color Arrow::getLineColor() const {
+    return this->line[0].color;
+}
 

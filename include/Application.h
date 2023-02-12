@@ -39,7 +39,7 @@ private:
 
     void createMessage(const std::string &text, float ttl);
 
-    void onSortBtnClicked(void*);
+    void onSortBtnClicked(void *);
 
     struct ByPressingRightMouseButtonOnVertex {
 
@@ -77,11 +77,14 @@ private:
     float viewMouseScrollSpeed;
     float viewRotationSpeed;
     std::shared_ptr<Label> label;
+    sf::Color pathColor;
+    sf::Color defaultColor;
 
 public:
     void run();
 
     Application(int width, int height, const std::string &title = "Application");
+
     virtual ~Application();
 
     void imguiWindow();
@@ -89,6 +92,8 @@ public:
     void onLabelTextEntered(void *param);
 
     void createVertexByName(const std::string &text);
+
+    void setPathColor(std::list<std::string> &path);
 };
 
 
