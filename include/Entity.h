@@ -13,6 +13,7 @@ public:
     void setName(const std::string& name);
     const std::string& getName() const;
     Signal& getSignal(const std::size_t& id);
+    void emit(const size_t &id, void *param);
     virtual sf::FloatRect getGlobalBounds() const;
     virtual void update(float dt) = 0;
     virtual void markToRemove(bool remove) = 0;

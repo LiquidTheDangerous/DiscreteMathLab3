@@ -13,6 +13,7 @@
 #include <Message.h>
 #include <EntityBounder.h>
 #include <Button.hpp>
+#include "Label.h"
 
 class Application {
 private:
@@ -21,6 +22,7 @@ private:
     SFMLEventDispatcher eventDispatcher;
     std::shared_ptr<EntityEventDispatcher> mouseEventDispatcher;
     std::shared_ptr<EntityEventDispatcher> guiEventDispatcher;
+    std::shared_ptr<EntityEventDispatcherImpl> arrowHolder;
     std::shared_ptr<MousePositionProvider> mppGUI;
     std::shared_ptr<MousePositionProvider> mppWorldPos;
 
@@ -36,6 +38,8 @@ private:
     void render(const sf::Time &dt);
 
     void createMessage(const std::string &text, float ttl);
+
+    void onSortBtnClicked(void*);
 
     struct ByPressingRightMouseButtonOnVertex {
 
@@ -72,13 +76,19 @@ private:
     float viewMoveSpeed;
     float viewMouseScrollSpeed;
     float viewRotationSpeed;
+    std::shared_ptr<Label> label;
 
 public:
     void run();
 
     Application(int width, int height, const std::string &title = "Application");
+    virtual ~Application();
 
+    void imguiWindow();
 
+    void onLabelTextEntered(void *param);
+
+    void createVertexByName(const std::string &text);
 };
 
 

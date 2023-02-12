@@ -129,3 +129,7 @@ Entity *EntityEventDispatcherImpl::getEntityByName(const std::string &name) cons
 
     return iter->get();
 }
+
+ std::list<EntityEventDispatcherImpl::EntityPtr> &EntityEventDispatcherImpl::getEntities()  {
+    return entities;
+}

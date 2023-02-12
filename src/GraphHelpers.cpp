@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <GraphHelpers.h>
+#include <limits>
 
 void GraphHelpers::_dfs(const Graph &graph, std::set<std::string> &visited, const std::string &startVertexName) {
     auto iter = visited.insert(startVertexName);
@@ -136,4 +137,65 @@ void GraphHelpers::removeNullColumns(std::vector<std::vector<int>> &incidentMatr
             }
         }
     }
+}
+
+std::optional<std::map<std::string, int>> GraphHelpers::Dijkstra(const Graph &graph, const std::string &startVertexName) {
+    if (!graph.contains(startVertexName)){
+        return std::nullopt;
+    }
+    std::map<std::string, int> result;
+    auto vertices = graph.getVerticesVect();
+    auto quoted = std::vector<bool>(graph.getVerticesCount(),false);
+    auto vertexCost = std::vector<int>(graph.getVerticesCount(),GraphHelpers::infitity);
+    auto verticesIndices = graph.getVerticesIndices();
+    vertexCost[verticesIndices[startVertexName]] = 0;
+    const auto* currentVertex = &startVertexName;
+
+    for(;;){
+
+        //mark current vertex
+        quoted[verticesIndices[*currentVertex]] = true;
+
+        for(const auto& neighbor : graph.getNeighbors(*currentVertex)){
+
+            //Edge weight
+            const auto& w = neighbor.second;
+            const auto& currentVertexCost = vertexCost[verticesIndices[*currentVertex]];
+            auto& neighborVertexCost = vertexCost[verticesIndices[neighbor.first.getName()]];
+
+            //Try update vertex cost
+            if (w + currentVertexCost < neighborVertexCost){
+                neighborVertexCost = w + currentVertexCost;
+            }
+        }
+
+        //find next current vertex
+        auto minCost = GraphHelpers::infitity;
+        auto index = -1;
+        int c = 0;
+        for (const auto& cost : vertexCost){
+            if (!quoted[c] && cost < minCost){
+                minCost = cost;
+                index = c;
+            }
+            ++c;
+        }
+
+        //if index not found then break
+        if (index == -1){
+            break;
+        }
+
+        currentVertex = &vertices[index];
+
+    }
+
+    int c = 0;
+    for (const auto& vertex : vertices){
+
+        result[vertex] = vertexCost[c];
+        ++c;
+    }
+
+    return std::move(result);
 }

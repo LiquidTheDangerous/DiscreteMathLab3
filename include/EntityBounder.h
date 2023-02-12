@@ -13,7 +13,7 @@ public:
     void pushEntity(Entity* e);
     bool isBounding() const;
 private:
-
+    void initArrowSignals(Arrow* arrow);
     Entity* first;
     Entity* second;
     Application* app;

@@ -36,3 +36,7 @@ void Entity::move(const sf::Vector2f &vect) {
     this->move(vect.x,vect.y);
 }
 
+void Entity::emit(const size_t &id, void *param) {
+    this->signals.emit(id, param);
+}
+

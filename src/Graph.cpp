@@ -31,7 +31,7 @@ bool Graph::connect(const std::string &sourceName, const std::string &destinatio
     return true;
 }
 
-std::list<Graph::edge> Graph::getNeighbors(const std::string &vertexName) const {
+const std::list<Graph::edge> & Graph::getNeighbors(const std::string &vertexName) const {
     auto sourceIt = this->vertices.find(VertexT(vertexName));
     if (sourceIt == this->vertices.end())
         throw std::runtime_error("Vertex not found");
@@ -96,20 +96,16 @@ std::size_t Graph::getVerticesCount() const {
     return this->vertices.size();
 }
 
-std::pair<std::vector<std::vector<int>>, std::map<std::size_t, std::string>> Graph::getIncidentMatrix() const{
+std::pair<std::vector<std::vector<int>>, std::vector<std::string>> Graph::getIncidentMatrix() const{
     auto matrixResult = std::vector<std::vector<int>>(this->getVerticesCount(),
                                                       std::vector<int>(this->getVerticesCount(), 0));
-    auto map = std::map<std::size_t, std::string>();
-    std::size_t c = 0;
-    for (auto &&v: this->vertices) {
-        map.emplace(c++, v.first.getName());
-    }
+    auto map = getVerticesVect();
     int i = 0;
     for (auto &&v1: this->vertices) {
         int j = 0;
         for (auto &&v2: map) {
             if (std::find_if(v1.second.begin(), v1.second.end(), [&v2](const Graph::edge &e) -> bool {
-                return e.first.getName() == v2.second;
+                return e.first.getName() == v2;
             }) != v1.second.end()) {
                 matrixResult[i][j] = 1;
             } else {
@@ -121,3 +117,58 @@ std::pair<std::vector<std::vector<int>>, std::map<std::size_t, std::string>> Gra
     }
     return {std::move(matrixResult), std::move(map)};
 }
+
+std::vector<std::string> Graph::getVerticesVect() const {
+    auto vector = std::vector<std::string>(this->getVerticesCount());
+    std::size_t c = 0;
+    for (auto &&v: vertices) {
+        vector[c++]=(v.first.getName());
+    }
+    return vector;
+}
+
+bool Graph::setW(const std::string &sourceName, const std::string &destinationName, int w) {
+    auto sourceIt = this->vertices.find(VertexT(sourceName));
+    if (sourceIt == this->vertices.end())
+        return false;
+
+    auto destinationIt = this->vertices.find(VertexT(destinationName));
+    if (destinationIt == this->vertices.end())
+        return false;
+
+    auto iter = std::find_if(sourceIt->second.begin(), sourceIt->second.end(),[destinationName](const Graph::edge& e)->bool{
+        return e.first.getName() == destinationName;
+    });
+    if (iter == sourceIt->second.end()){
+        return false;
+    }
+    iter->second = w;
+
+    return true;
+}
+
+std::optional<int> Graph::getW(const std::string &sourceName, const std::string &destinationName) {
+    auto sourceIt = this->vertices.find(VertexT(sourceName));
+    if (sourceIt == this->vertices.end())
+        return std::nullopt;
+    auto destinationIt = this->vertices.find(VertexT(destinationName));
+    if (destinationIt == this->vertices.end())
+        return std::nullopt;
+    auto iter = std::find_if(sourceIt->second.begin(), sourceIt->second.end(),[destinationName](const Graph::edge& e)->bool{
+        return e.first.getName() == destinationName;
+    });
+    if (iter == sourceIt->second.end()){
+        return std::nullopt;
+    }
+    return std::make_optional<int>(iter->second);
+}
+
+std::map<std::string,std::size_t > Graph::getVerticesIndices() const{
+    std::map<std::string,std::size_t> result;
+    std::size_t c{0};
+    for(auto& v : this->vertices){
+        result[v.first.getName()] = c++;
+    }
+    return result;
+}
+

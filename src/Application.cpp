@@ -12,6 +12,11 @@
 #include <ColorHelpers.h>
 #include "GuiComponent.hpp"
 #include <ViewPositionProviderImpl.hpp>
+#include <imgui.h>
+#include <optional>
+#include <imgui-SFML.h>
+#include <complex>
+
 
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title, sf::Style::Default),
@@ -19,9 +24,11 @@ Application::Application(int width, int height, const std::string &title) :
         viewMoveSpeed(200.f),
         viewMouseScrollSpeed(4.f),
         viewRotationSpeed(4.f) {
+    ImGui::SFML::Init(window);
     this->entityBounder = std::make_shared<EntityBounder>(this);
     this->mouseEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
     this->guiEventDispatcher = std::make_shared<EntityEventDispatcherImpl>();
+    this->arrowHolder = std::make_shared<EntityEventDispatcherImpl>();
     this->window.setVerticalSyncEnabled(true);
     this->view = this->window.getDefaultView();
 
@@ -45,33 +52,11 @@ Application::Application(int width, int height, const std::string &title) :
                                              });
 
 
-    auto label = std::make_shared<Label>(this->font, "Enter Vertex Name", this->gui_view);
+    label = std::make_shared<Label>(this->font, "Enter Vertex Name", this->gui_view);
     label->setInViewPositionFactors(0.5, 0);
-    label->getSignal(signals::onEndEditingText).addSlot([label{label.get()}, this](void *param) {
-        auto text = label->getString();
-        if (this->graph.contains(text)) {
-            this->createMessage("Vertex already exists...", 0.5f);
-            return;
-        }
-        if (text.empty()) {
-            this->createMessage("Vertex name should be not empty...", 0.5f);
-            return;
-        }
-        label->setString("");
-        auto e = std::make_unique<VertexEntity>(this->font, text, this->mppWorldPos);
-        e->getSignal(signals::onMiddleMouseClicked).addSlot(
-                Application::ByPressingRightMouseButtonOnVertex(this, e.get()));
-        e->getSignal(signals::onRightMouseClicked).addSlot([this, entity{e.get()}](void *) {
-            this->entityBounder->pushEntity(entity);
-        });
-        auto pos = mppWorldPos->getMousePosition();
-        e->followMouse(0, 0);
-        e->setPosition(pos.first, pos.second);
-        this->mouseEventDispatcher->addEntity(std::move(e));
-        this->graph.addVertex(text);
-        this->createMessage("Vertex created", 0.5f);
-        this->colorizeVertices();
-    });
+    label->getSignal(signals::onEndEditingText).addSlot(
+            std::bind(&Application::onLabelTextEntered, this, std::placeholders::_1));
+    this->guiEventDispatcher->addEntity(label);
 
     this->eventDispatcher.addListenerOnKeyPressedEvent(sf::Keyboard::Space, [this](const sf::Time &dt) {
         this->colorizeVertices();
@@ -79,54 +64,12 @@ Application::Application(int width, int height, const std::string &title) :
 
 
     this->mouseEventDispatcher->setMousePositionProvider(mppWorldPos);
+    this->arrowHolder->setMousePositionProvider(mppWorldPos);
 
     this->guiEventDispatcher->setMousePositionProvider(mppGUI);
 
-    this->guiEventDispatcher->addEntity(label);
     auto buttonColor = sf::Color(238, 238, 228, 255);
     auto onClickedButtonColor = sf::Color(238, 238, 228, 128);
-    auto button = std::make_shared<Button>(100.f, 50.f, this->font, "Sort", this->gui_view, sf::Color::Black,
-                                           buttonColor);
-    button->setDefaultBgColor(buttonColor);
-    button->setOnClickedBgColor(onClickedButtonColor);
-    button->setInViewPositionFactors(1.f, 0.5f);
-    button->setPosition(-100, 0);
-    button->getSignal(signals::onLeftMouseClicked).addSlot([this](void *) {
-        auto sort = GraphHelpers::TopologicalSort(this->graph);
-        if (!sort) {
-            this->createMessage("Couldn't sort", 0.5f);
-            return;
-        }
-        auto &map = *sort;
-        auto windowSize = this->window.getSize();
-        auto &width = windowSize.x;
-        auto &height = windowSize.y;
-        auto stepHeight = height / (map.size() + 1);
-        unsigned long long stepWidth{};
-        std::size_t currStepY = 1;
-        for (auto &order: map) {
-            stepWidth = width / (order.second.size() + 1);
-            std::size_t currStepX = 1;
-            for (auto &vertexName: order.second) {
-                auto x = stepWidth * currStepX;
-                auto y = stepHeight * currStepY;
-
-                sf::Vector2f posInView =
-                        this->window.mapPixelToCoords(
-                                sf::Vector2i(
-                                        static_cast<int>(x),
-                                        static_cast<int>(y)),
-                                this->view);
-                auto entity = this->mouseEventDispatcher->getEntityByName(vertexName);
-                entity->setPosition(posInView);
-                ++currStepX;
-            }
-            ++currStepY;
-        }
-
-    });
-
-    this->guiEventDispatcher->addEntity(button);
     this->eventDispatcher.addListenerOnKey(sf::Keyboard::D, [this](const sf::Time &dt) {
         this->view.move(sf::Vector2f(this->viewMoveSpeed, 0.f) * dt.asSeconds());
     });
@@ -191,17 +134,21 @@ void Application::processEvents(sf::Event &event, const sf::Time &dt) {
         if (event.type == sf::Event::Closed) {
             this->window.close();
         }
+        ImGui::SFML::ProcessEvent(window, event);
         this->eventDispatcher.handleEvent(event, dt);
         this->mouseEventDispatcher->handleEvent(event);
+        this->arrowHolder->handleEvent(event);
         this->guiEventDispatcher->handleEvent(event);
     };
     this->eventDispatcher.handleInput(dt);
+
 }
 
 void Application::update(const sf::Time &dt) {
-
+    ImGui::SFML::Update(window, dt);
     this->mouseEventDispatcher->update(dt.asSeconds());
-    updateArrows(dt);
+    this->arrowHolder->update(dt.asSeconds());
+//    updateArrows(dt);
 
     this->guiEventDispatcher->update(dt.asSeconds());
 }
@@ -223,12 +170,66 @@ void Application::render(const sf::Time &dt) {
     this->window.setView(this->view);
     this->window.draw(*this->mouseEventDispatcher);
 
-    drawArrows();
+    this->window.draw(*this->arrowHolder);
+//    drawArrows();
 
     this->window.setView(this->gui_view);
     this->window.draw(*this->guiEventDispatcher);
 
+    imguiWindow();
+
+    ImGui::SFML::Render(window);
     this->window.display();
+}
+
+void Application::imguiWindow() {
+    ImGui::Begin("Functions");
+    ImGui::StyleColorsDark();
+
+    static char buf[255];
+    static char startVertexName[255];
+    ImGui::InputText("- vertex name", buf, 255);
+    if (ImGui::Button("Create vertex")) {
+        this->createVertexByName(buf);
+    }
+    if (ImGui::Button("Topological sort")) {
+        onSortBtnClicked(nullptr);
+    }
+//    static float lerpFactor = 0.5f;
+//    static float changed = lerpFactor;
+//    ImGui::SliderFloat("Lerp", &lerpFactor, 0.f, 1.f);
+//    if (lerpFactor != changed) {
+//        for (auto &arrow: this->arrowHolder->getEntities()) {
+//            (std::static_pointer_cast<Arrow>(arrow))->setLerpFactor(lerpFactor);
+//        }
+//    }
+
+    static bool flag = false;
+    static auto dijkstraResult = std::optional<std::map<std::string,int>>(std::nullopt);
+
+    if (ImGui::Button("Dijksta")) {
+        flag ^= true;
+        if (flag) {
+            dijkstraResult = GraphHelpers::Dijkstra(this->graph,startVertexName);
+        }
+    }
+    ImGui::SameLine();
+    ImGui::InputText("Start vertex name",startVertexName, IM_ARRAYSIZE(startVertexName));
+    if (flag) {
+        if (!dijkstraResult){
+            this->createMessage("Couldn't dijkstra",0.5f);
+            flag = false;
+        }
+        else{
+            for (const auto& pair : dijkstraResult.value()) {
+                ImGui::Text("vertex: %s, cost: %d", pair.first.c_str(),pair.second);
+            }
+        }
+
+    }
+
+
+    ImGui::End();
 }
 
 void Application::drawArrows() {
@@ -241,4 +242,72 @@ void Application::createMessage(const std::string &text, float ttl) {
     auto message = std::make_shared<Message>(this->font, text, ttl, this->gui_view);
     message->setInViewPositionFactors(0.5, 0.9f);
     this->guiEventDispatcher->addEntity(message);
+}
+
+Application::~Application() {
+    ImGui::SFML::Shutdown();
+}
+
+void Application::onSortBtnClicked(void *) {
+    auto sort = GraphHelpers::TopologicalSort(this->graph);
+    if (!sort) {
+        this->createMessage("Couldn't sort", 0.5f);
+        return;
+    }
+    auto &map = *sort;
+    auto windowSize = this->window.getSize();
+    auto &width = windowSize.x;
+    auto &height = windowSize.y;
+    auto stepHeight = height / (map.size() + 1);
+    unsigned long long stepWidth{};
+    std::size_t currStepY = 1;
+    for (auto &order: map) {
+        stepWidth = width / (order.second.size() + 1);
+        std::size_t currStepX = 1;
+        for (auto &vertexName: order.second) {
+            auto x = stepWidth * currStepX;
+            auto y = stepHeight * currStepY;
+
+            sf::Vector2f posInView =
+                    this->window.mapPixelToCoords(
+                            sf::Vector2i(
+                                    static_cast<int>(x),
+                                    static_cast<int>(y)),
+                            this->view);
+            auto entity = this->mouseEventDispatcher->getEntityByName(vertexName);
+            entity->setPosition(posInView);
+            ++currStepX;
+        }
+        ++currStepY;
+    }
+}
+
+void Application::onLabelTextEntered(void *param) {
+    auto text = label->getString();
+    createVertexByName(text);
+}
+
+void Application::createVertexByName(const std::string &text) {
+    if (graph.contains(text)) {
+        createMessage("Vertex already exists...", 0.5f);
+        return;
+    }
+    if (text.empty()) {
+        createMessage("Vertex name should be not empty...", 0.5f);
+        return;
+    }
+    label->setString("");
+    auto e = std::make_unique<VertexEntity>(font, text, mppWorldPos);
+    e->getSignal(onMiddleMouseClicked).addSlot(
+            ByPressingRightMouseButtonOnVertex(this, e.get()));
+    e->getSignal(onRightMouseClicked).addSlot([this, entity{e.get()}](void *) {
+        entityBounder->pushEntity(entity);
+    });
+    auto pos = mppWorldPos->getMousePosition();
+    e->followMouse(0, 0);
+    e->setPosition(pos.first, pos.second);
+    mouseEventDispatcher->addEntity(std::move(e));
+    graph.addVertex(text);
+    createMessage("Vertex created", 0.5f);
+    colorizeVertices();
 }

@@ -6,6 +6,7 @@
 #include "EntityEventDispatcherImpl.h"
 
 sf::FloatRect Label::getGlobalBounds() const {
+
     if (this->text.getString().getSize() == 0){
         return this->getTransform().transformRect(sf::FloatRect(0,0,100,100));
     }
@@ -42,6 +43,11 @@ Label::Label(sf::Font &font, const std::string &placeholder, sf::View &view, con
         if (this->isSelected()) {
             auto event = static_cast<sf::Event *>(param);
             auto symbol = static_cast<char>(event->text.unicode);
+            if (this->textValidator){
+                if (!this->textValidator(symbol)){
+                    return;
+                }
+            }
             if (symbol == '\b') {
                 auto str = this->getString();
                 this->setString(str.substr(0, str.size() - 1));
@@ -53,7 +59,6 @@ Label::Label(sf::Font &font, const std::string &placeholder, sf::View &view, con
                 return;
             }
             this->setString(this->getString() + symbol);
-//            this->reinitLine();
         }
     });
 }
@@ -105,4 +110,8 @@ void Label::markToRemove(bool remove) {
 
 bool Label::needsRemoved()const {
     return this->rm_flag;
+}
+
+void Label::setTextValidator(const std::function<bool(const char &)> &textValidator) {
+    Label::textValidator = textValidator;
 }

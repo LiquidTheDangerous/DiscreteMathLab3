@@ -10,12 +10,14 @@
 #include <Vertex.h>
 #include <Graph.h>
 #include <optional>
+#include <limits>
 
 class GraphHelpers {
 private:
 
     static constexpr int null = 0;
     static constexpr int removed = 1<<30;
+    static constexpr int infitity = std::numeric_limits<int>::max();
 
     static void _dfs(const Graph& graph, std::set<std::string>& visited, const std::string &startVertexName);
     static std::list<std::size_t> findNullColumns(const std::vector<std::vector<int>>& incidentMatrix);
@@ -24,9 +26,11 @@ public:
     static std::map<std::string,std::map<std::string,bool>> ReachMatrix(const Graph& graph);
     static std::map<std::string,std::map<std::string,bool>> StrongConnectMatrix(const Graph& graph);
     static std::set<std::set<std::string>> BoundComponents(const Graph& graph);
+    static std::optional<std::map<std::string, int>> Dijkstra(const Graph &graph, const std::string &startVertexName);
     static bool HasCycles(const Graph& graph);
     static std::optional<std::map<int, std::set<std::string>>> TopologicalSort(const Graph& graph);
-};
 
+
+};
 
 #endif //DISCRETEMATHLAB3_GRAPHHELPERS_H

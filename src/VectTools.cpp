@@ -49,3 +49,7 @@ float VectTools::angleRad(const sf::Vector2f& first, const sf::Vector2f& second)
 {
 	return std::acos(VectTools::cosAngle(first, second));
 }
+
+sf::Vector2f VectTools::Lerp(const sf::Vector2f &first, const sf::Vector2f &second, const float &factor) {
+    return first*(1-factor)+second*factor;
+}

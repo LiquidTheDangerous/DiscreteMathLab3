@@ -3,15 +3,75 @@ project(DiscreteMathLab3)
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set(SFML_STATIC_LIBRARIES TRUE)
 
-
-add_executable(DiscreteMathLab3 src/main.cpp src/Vertex.cpp include/Vertex.h src/Graph.cpp include/Graph.h src/GraphHelpers.cpp include/GraphHelpers.h src/Application.cpp include/Application.h src/SFMLEventDispatcher.cpp include/SFMLEventDispatcher.h src/VertexEntity.cpp include/VertexEntity.h src/EntityEventDispatcherImpl.cpp include/EntityEventDispatcherImpl.h src/Entity.cpp include/Entity.h src/Signal.cpp include/Signal.h include/MousePositionProvider.h include/MousePositionProviderImpl.h include/EntityEventDispatcher.h src/Label.cpp include/Label.h src/Message.cpp include/Message.h src/Arrow.cpp include/Arrow.h include/EntityBounder.h src/EntityBounder.cpp include/VectTools.h src/VectTools.cpp include/ColorHelpers.h include/Button.hpp src/Button.cpp src/GuiComponent.cpp include/ViewPositionProvider.hpp src/ViewPositionProvider.cpp include/ViewPositionProviderImpl.hpp src/ViewPositionProviderImpl.cpp)
-target_include_directories(DiscreteMathLab3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(DiscreteMathLab3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/SFML-2.5.1/include)
-set(SFML_STATIC_LIBRARIES TRUE)
 set(SFML_DIR "${PROJECT_SOURCE_DIR}/lib/SFML-2.5.1")
+
+set(SFML_INCLUDE_DIR ${SFML_DIR}/include)
+
 set(SFML_ROOT ${SFML_DIR})
+
 set(CMAKE_MODULE_PATH "${SFML_DIR}/cmake/Modules" ${CMAKE_MODULE_PATH})
+
 find_package(SFML COMPONENTS graphics)
-target_link_libraries(DiscreteMathLab3 sfml-graphics)
+
+
+set(SOURCES
+        src/main.cpp
+        src/Vertex.cpp
+        src/Graph.cpp
+        src/GraphHelpers.cpp
+        src/Application.cpp
+        src/SFMLEventDispatcher.cpp
+        src/VertexEntity.cpp
+        src/EntityEventDispatcherImpl.cpp
+        src/Entity.cpp
+        src/Signal.cpp
+        src/Label.cpp
+        src/Message.cpp
+        src/Arrow.cpp
+        src/EntityBounder.cpp
+        src/VectTools.cpp
+        src/Button.cpp
+        src/GuiComponent.cpp
+        src/ViewPositionProvider.cpp
+        src/ViewPositionProviderImpl.cpp)
+
+set(HEADERS
+        include/Vertex.h
+        include/Graph.h
+        include/GraphHelpers.h
+        include/Application.h
+        include/SFMLEventDispatcher.h
+        include/VertexEntity.h
+        include/EntityEventDispatcherImpl.h
+        include/Entity.h
+        include/Signal.h
+        include/MousePositionProvider.h
+        include/MousePositionProviderImpl.h
+        include/EntityEventDispatcher.h
+        include/Label.h
+        include/Message.h
+        include/Arrow.h
+        include/EntityBounder.h
+        include/VectTools.h
+        include/ColorHelpers.h
+        include/Button.hpp
+        include/ViewPositionProvider.hpp
+        include/ViewPositionProviderImpl.hpp)
+
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME}
+        PRIVATE ${SOURCES}
+        PUBLIC ${HEADERS})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${SFML_INCLUDE_DIR})
+
+add_subdirectory(dependencies)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics sfml-system  ImGui-SFML::ImGui-SFML)
+

@@ -38,12 +38,17 @@ public:
 
     bool needsRemoved() const override;
 
+    std::list<EntityPtr> &getEntities();
+
     Entity *getEntityByName(const std::string &name) const override;
 
 private:
     void removeEntities();
     std::shared_ptr<MousePositionProvider> mousePositionProvider;
     std::list<EntityPtr> entities;
+
+
+private:
     std::size_t e_id = -1;
 };
 

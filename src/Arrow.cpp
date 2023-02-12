@@ -5,9 +5,14 @@
 #include "Arrow.h"
 #include <EntityEventDispatcherImpl.h>
 #include "VectTools.h"
+#include "signals.hpp"
+#include <iostream>
 
 sf::FloatRect Arrow::getGlobalBounds() const {
-    return Entity::getGlobalBounds();
+//    std::cout << "Bound called" << std::endl;
+    auto bounds = this->text.getGlobalBounds();
+//    std::cout << bounds.left << ' ' << bounds.top << ' '<<bounds.width << ' ' << bounds.height << std::endl;
+    return this->text.getGlobalBounds();
 }
 
 void Arrow::update(float dt) {
@@ -35,15 +40,21 @@ bool Arrow::needsRemoved() const {
 void Arrow::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     states.transform *= this->getTransform();
     target.draw(this->line, states);
-    target.draw(this->arrow, states);
+    if (this->is_oriented){
+        target.draw(this->arrow, states);
+    }
+    target.draw(this->text,states);
 }
 
-Arrow::Arrow(Entity *targetStart, Entity *targetEnd, const sf::Color &color) :
+Arrow::Arrow(Entity *targetStart, Entity *targetEnd, sf::Font &font,sf::View& view, const sf::Color &color) :
         line(sf::Lines, 2),
         arrow(sf::LineStrip, 3),
         rm_mark{false},
         start(targetStart),
-        end(targetEnd) {
+        end(targetEnd),
+        lerpFactor(0.5f),
+        text(font,"",view,""),
+        is_oriented(true){
     line[0] = sf::Vertex{targetStart->getPosition(), color};
     line[1] = sf::Vertex{targetEnd->getPosition(), color};
 
@@ -55,14 +66,28 @@ Arrow::Arrow(Entity *targetStart, Entity *targetEnd, const sf::Color &color) :
         targetStart->getSignal(signals::onDelete).deleteSlot(order1);
         this->markToRemove(true);
     });
+    this->w = 1;
+    this->text.setString("1");
+    this->getSignal(signals::onLeftMouseClicked).addSlot([this](void * param) {
+        this->text.emit(signals::onLeftMouseClicked, param);
+    });
+
+    this->getSignal(signals::onEnteredText).addSlot([this](void * param) {
+        this->text.emit(signals::onEnteredText, param);
+    });
+    this->text.getSignal(signals::onEndEditingText).addSlot([this](void* param){
+       this->emit(signals::onEndEditingText,param);
+    });
+    this->font = &font;
     this->reinitArrow();
 }
 
 void Arrow::reinitArrow() {
-    auto mid_point = (this->line[0].position + this->line[1].position) / 2.f;
+    auto mid_point = VectTools::Lerp(this->line[0].position , this->line[1].position,this->lerpFactor);
     auto vect = VectTools::normalize(this->line[1].position - this->line[0].position);
     auto l_norm = VectTools::leftNormal(vect);
     auto r_norm = VectTools::rightNormal(vect);
+    this->text.Transformable::setPosition((this->line[0].position+this->line[1].position)/2.f);
 
     arrow[0].position = l_norm * this->scale_arrow_factor + mid_point;
     arrow[1].position = vect * this->scale_arrow_factor + mid_point;
@@ -70,7 +95,6 @@ void Arrow::reinitArrow() {
     arrow[0].color = sf::Color::Black;
     arrow[1].color = sf::Color::Black;
     arrow[2].color = sf::Color::Black;
-//    arrow.
 }
 
 Entity *Arrow::getStart() const {
@@ -80,4 +104,54 @@ Entity *Arrow::getStart() const {
 Entity *Arrow::getEnd() const {
     return end;
 }
+
+int Arrow::getW() const {
+    return w;
+}
+
+void Arrow::setW(int w) {
+    this->text.setString(std::to_string(w));
+    Arrow::w = w;
+}
+
+float Arrow::getLerpFactor() const {
+    return lerpFactor;
+}
+
+void Arrow::setLerpFactor(float lerpFactor) {
+    Arrow::lerpFactor = lerpFactor;
+}
+
+std::size_t Arrow::getLabelTextSize(){
+    return this->text.getString().size();
+}
+
+void Arrow::setLabelString(const std::string& string){
+    this->text.setString(string);
+}
+
+void Arrow::setTextValidator(const std::function<bool(const char &)> &func) {
+    this->text.setTextValidator(func);
+}
+
+const std::string& Arrow::getString(){
+    return this->text.getString();
+}
+
+const std::string& Arrow::getDestinationName() const{
+    return this->end->getName();
+}
+
+const std::string& Arrow::getSourceName() const{
+    return this->start->getName();
+}
+
+bool Arrow::isOriented() const {
+    return is_oriented;
+}
+
+void Arrow::setIsOriented(bool isOriented) {
+    is_oriented = isOriented;
+}
+
 

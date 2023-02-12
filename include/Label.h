@@ -15,13 +15,17 @@ class Label : public GUIComponent {
     sf::VertexArray line;
     bool selected = false;
     bool rm_flag;
+    std::function<bool(const char&)> textValidator;
 
+private:
     void reinitLine();
 
 public:
 
 
     explicit Label(sf::Font &font, const std::string &placeholder, sf::View &view, const std::string &text = "");
+
+    void setTextValidator(const std::function<bool(const char &)> &textValidator);
 
     void setString(const std::string& text);
 

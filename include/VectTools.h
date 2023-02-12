@@ -16,7 +16,7 @@ namespace VectTools
 	float cosAngle(const sf::Vector2f& first, const sf::Vector2f& second);
 	float angleRad(const sf::Vector2f& first, const sf::Vector2f& second);
 	float angleDeg(const sf::Vector2f& first, const sf::Vector2f& second);
-
+    sf::Vector2f Lerp(const sf::Vector2f& first, const sf::Vector2f& second,const float& factor);
 	constexpr float PI = 3.1415926535897932f;
 };
 
