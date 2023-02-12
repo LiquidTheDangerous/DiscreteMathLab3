@@ -20,8 +20,8 @@ private:
     sf::RenderWindow window;
     sf::Color bgColor;
     SFMLEventDispatcher eventDispatcher;
-    std::shared_ptr<EntityEventDispatcher> mouseEventDispatcher;
-    std::shared_ptr<EntityEventDispatcher> guiEventDispatcher;
+    std::shared_ptr<EntityEventDispatcherImpl> mouseEventDispatcher;
+    std::shared_ptr<EntityEventDispatcherImpl> guiEventDispatcher;
     std::shared_ptr<EntityEventDispatcherImpl> arrowHolder;
     std::shared_ptr<MousePositionProvider> mppGUI;
     std::shared_ptr<MousePositionProvider> mppWorldPos;

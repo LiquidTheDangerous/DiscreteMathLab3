@@ -187,7 +187,7 @@ void Application::imguiWindow() {
     ImGui::StyleColorsDark();
 
     static char buf[255];
-    static char startVertexName[255];
+    static const char* startVertexName = nullptr;
     ImGui::InputText("- vertex name", buf, 255);
     if (ImGui::Button("Create vertex")) {
         this->createVertexByName(buf);
@@ -206,18 +206,39 @@ void Application::imguiWindow() {
 
     static bool flag = false;
     static auto dijkstraResult = std::optional<std::map<std::string,int>>(std::nullopt);
-
+#pragma region DijkstraButton
     if (ImGui::Button("Dijksta")) {
         flag ^= true;
         if (flag) {
-            dijkstraResult = GraphHelpers::Dijkstra(this->graph,startVertexName);
+            if (startVertexName != nullptr) {
+                dijkstraResult = GraphHelpers::Dijkstra(this->graph, startVertexName);
+            }
         }
     }
     ImGui::SameLine();
-    ImGui::InputText("Start vertex name",startVertexName, IM_ARRAYSIZE(startVertexName));
+#pragma endregion
+#pragma region VertexList
+    if (ImGui::BeginCombo("Start Vertex Name", startVertexName)){
+        for (auto& e : this->mouseEventDispatcher->getEntities()){
+            bool is_selected = (startVertexName == e->getName().c_str());
+            if (ImGui::Selectable(e->getName().c_str(),is_selected)){
+                startVertexName = e->getName().c_str();
+            }
+            if (is_selected){
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+#pragma endregion
     if (flag) {
         if (!dijkstraResult){
-            this->createMessage("Couldn't dijkstra",0.5f);
+            if (startVertexName == nullptr){
+                this->createMessage("Please, select start vertex",0.5f);
+            }
+            else{
+                this->createMessage("Couldn't dijkstra",0.5f);
+            }
             flag = false;
         }
         else{
@@ -225,8 +246,11 @@ void Application::imguiWindow() {
                 ImGui::Text("vertex: %s, cost: %d", pair.first.c_str(),pair.second);
             }
         }
-
+        //TODO: after binding vertex label don't forget set flag false
     }
+
+
+
 
 
     ImGui::End();

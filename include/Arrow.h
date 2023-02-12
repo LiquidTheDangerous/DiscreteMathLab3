@@ -14,20 +14,25 @@ private:
     int w;
     float lerpFactor;
 
-
-private:
     Entity *start;
     Entity *end;
     size_t order1;
     size_t order2;
     Label text;
     bool is_oriented;
+    bool show_text;
+public:
+    bool isShowText() const;
+
+    void setShowText(bool showText);
+
 public:
     bool isOriented() const;
 
     void setIsOriented(bool isOriented);
 
 private:
+    static const sf::FloatRect nullBody;
     bool rm_mark;
     sf::VertexArray line;
     sf::VertexArray arrow;

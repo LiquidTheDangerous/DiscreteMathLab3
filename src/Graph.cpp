@@ -140,9 +140,10 @@ bool Graph::setW(const std::string &sourceName, const std::string &destinationNa
         return e.first.getName() == destinationName;
     });
     if (iter == sourceIt->second.end()){
-        return false;
+        this->connect(sourceName,destinationName,w);
+    }else{
+        iter->second = w;
     }
-    iter->second = w;
 
     return true;
 }

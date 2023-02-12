@@ -32,15 +32,33 @@ void EntityBounder::pushEntity(Entity *e) {
 
 //        auto firstName = app->graph.
 
-        if (iter != app->arrowHolder->getEntities().end()) {
+        if (iter != app->arrowHolder->getEntities().end() && transIter == app->arrowHolder->getEntities().end()) {
             (*iter)->markToRemove(true);
             app->graph.disconnect(first->getName(), second->getName());
             app->createMessage("Edge removed", 0.5f);
         } else {
-            if (transIter != app->arrowHolder->getEntities().end()){
-                //TODO:unoriented edge
-            }
-            else{
+            if (transIter != app->arrowHolder->getEntities().end() && iter == app->arrowHolder->getEntities().end()) {
+                auto p = std::static_pointer_cast<Arrow>(*transIter);
+                p->setIsOriented(false);
+                auto arrow = std::make_shared<Arrow>(first, second, app->font, app->view);
+                arrow->setShowText(false);
+                arrow->setIsOriented(false);
+                arrow->setW((p->getW()));
+                this->initArrowSignals(arrow.get());
+                app->arrowHolder->getEntities().push_back(arrow);
+                app->graph.setW(first->getName(), second->getName(),p->getW());
+                app->createMessage("Unoriented Edge created", 0.5f);
+
+            } else if (transIter != app->arrowHolder->getEntities().end() &&
+                       iter != app->arrowHolder->getEntities().end()) {
+                auto p = std::static_pointer_cast<Arrow>(*transIter);
+                p->setIsOriented(true);
+                p->setShowText(true);
+                (*iter)->markToRemove(true);
+                app->graph.disconnect(first->getName(), second->getName());
+                app->createMessage("Edge removed", 0.5f);
+            } else if (transIter == app->arrowHolder->getEntities().end() &&
+                       iter == app->arrowHolder->getEntities().end()) {
                 auto arrow = std::make_shared<Arrow>(first, second, app->font, app->view);
                 this->initArrowSignals(arrow.get());
                 app->arrowHolder->getEntities().push_back(arrow);
@@ -88,11 +106,31 @@ void EntityBounder::initArrowSignals(Arrow *arrow) {
         try {
             auto len = std::stoi(arrow->getString());
             auto isConnect = app->graph.setW(arrow->getSourceName(), arrow->getDestinationName(), len);
-            if (isConnect) {
+            if (isConnect && !arrow->isOriented()) {
+                app->graph.setW(arrow->getDestinationName(), arrow->getSourceName(), len);
+                arrow->setW(len);
+                auto iter = std::find_if(app->arrowHolder->getEntities().begin(), app->arrowHolder->getEntities().end(),
+                                         [arrow](const std::shared_ptr<Entity> &e) -> bool {
+                                             auto p = std::static_pointer_cast<Arrow>(e);
+
+                                             return p->getStart() == arrow->getEnd() &&
+                                                    p->getEnd() == arrow->getStart();
+                                         });
+                if (iter != app->arrowHolder->getEntities().end()) {
+                    auto p = std::static_pointer_cast<Arrow>(*iter);
+                    p->setW(len);
+                }
+                char format[255]{};
+                std::sprintf(format, "from %s to %s and from %s to %s = %d", arrow->getSourceName().c_str(),
+                             arrow->getDestinationName().c_str(), arrow->getDestinationName().c_str(),
+                             arrow->getSourceName().c_str(), len);
+                app->createMessage(format, 0.5f);
+
+            } else if (isConnect) {
                 arrow->setW(len);
                 char format[255]{};
-                auto formatted = std::sprintf(format, "from %s to %s = %d", arrow->getSourceName().c_str(),
-                                              arrow->getDestinationName().c_str(), len);
+                std::sprintf(format, "from %s to %s = %d", arrow->getSourceName().c_str(),
+                             arrow->getDestinationName().c_str(), len);
                 app->createMessage(format, 0.5f);
             }
 
