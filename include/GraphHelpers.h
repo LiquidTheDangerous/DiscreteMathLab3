@@ -17,12 +17,12 @@ private:
 
     static constexpr int null = 0;
     static constexpr int removed = 1<<30;
-    static constexpr int infitity = std::numeric_limits<int>::max();
 
     static void _dfs(const Graph& graph, std::set<std::string>& visited, const std::string &startVertexName);
     static std::list<std::size_t> findNullColumns(const std::vector<std::vector<int>>& incidentMatrix);
     static void removeNullColumns(std::vector<std::vector<int>>& incidentMatrix,const std::list<std::size_t>& nullColumns);
 public:
+    static constexpr int infitity = std::numeric_limits<int>::max();
     static std::map<std::string,std::map<std::string,bool>> ReachMatrix(const Graph& graph);
     static std::map<std::string,std::map<std::string,bool>> StrongConnectMatrix(const Graph& graph);
     static std::set<std::set<std::string>> BoundComponents(const Graph& graph);

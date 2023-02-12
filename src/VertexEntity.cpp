@@ -11,9 +11,17 @@ void VertexEntity::draw(sf::RenderTarget &target, sf::RenderStates states) const
     states.transform *= this->getTransform();
     target.draw(this->circle, states);
     target.draw(this->text, states);
+    if (this->showAdditionalLabel){
+        target.draw(this->additionalLabel,states);
+    }
 }
 
 VertexEntity::VertexEntity(sf::Font &font, const std::string &name, std::shared_ptr<MousePositionProvider> mpp) {
+    this->showAdditionalLabel = false;
+    this->additionalLabel.setFont(font);
+    this->additionalLabel.setString("");
+    this->additionalLabel.setFillColor(sf::Color::Black);
+    this->additionalLabel.move(-15,-45);
     this->text.setFont(font);
     this->setName(name);
     this->text.setFillColor(sf::Color::Black);
@@ -101,4 +109,23 @@ void VertexEntity::setHoverColor(const sf::Color &color) {
 sf::Color VertexEntity::getHoverColor() const{
     return this->hoverColor;
 }
+
+bool VertexEntity::isShowAdditionalLabel() const {
+    return showAdditionalLabel;
+}
+
+void VertexEntity::setShowAdditionalLabel(bool showAdditionalLabel) {
+    VertexEntity::showAdditionalLabel = showAdditionalLabel;
+}
+
+void VertexEntity::setAdditionalLabelString(const std::string& string){
+    this->additionalLabel.setString(string);
+}
+
+std::string VertexEntity::getAdditionalLabelString() const{
+    return this->additionalLabel.getString();
+}
+
+
+
 

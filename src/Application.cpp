@@ -187,7 +187,7 @@ void Application::imguiWindow() {
     ImGui::StyleColorsDark();
 
     static char buf[255];
-    static const char* startVertexName = nullptr;
+    static const char *startVertexName = nullptr;
     ImGui::InputText("- vertex name", buf, 255);
     if (ImGui::Button("Create vertex")) {
         this->createVertexByName(buf);
@@ -195,17 +195,10 @@ void Application::imguiWindow() {
     if (ImGui::Button("Topological sort")) {
         onSortBtnClicked(nullptr);
     }
-//    static float lerpFactor = 0.5f;
-//    static float changed = lerpFactor;
-//    ImGui::SliderFloat("Lerp", &lerpFactor, 0.f, 1.f);
-//    if (lerpFactor != changed) {
-//        for (auto &arrow: this->arrowHolder->getEntities()) {
-//            (std::static_pointer_cast<Arrow>(arrow))->setLerpFactor(lerpFactor);
-//        }
-//    }
+
 
     static bool flag = false;
-    static auto dijkstraResult = std::optional<std::map<std::string,int>>(std::nullopt);
+    static auto dijkstraResult = std::optional<std::map<std::string, int>>(std::nullopt);
 #pragma region DijkstraButton
     if (ImGui::Button("Dijksta")) {
         flag ^= true;
@@ -218,13 +211,13 @@ void Application::imguiWindow() {
     ImGui::SameLine();
 #pragma endregion
 #pragma region VertexList
-    if (ImGui::BeginCombo("Start Vertex Name", startVertexName)){
-        for (auto& e : this->mouseEventDispatcher->getEntities()){
+    if (ImGui::BeginCombo("Start Vertex Name", startVertexName)) {
+        for (auto &e: this->mouseEventDispatcher->getEntities()) {
             bool is_selected = (startVertexName == e->getName().c_str());
-            if (ImGui::Selectable(e->getName().c_str(),is_selected)){
+            if (ImGui::Selectable(e->getName().c_str(), is_selected)) {
                 startVertexName = e->getName().c_str();
             }
-            if (is_selected){
+            if (is_selected) {
                 ImGui::SetItemDefaultFocus();
             }
         }
@@ -232,25 +225,41 @@ void Application::imguiWindow() {
     }
 #pragma endregion
     if (flag) {
-        if (!dijkstraResult){
-            if (startVertexName == nullptr){
-                this->createMessage("Please, select start vertex",0.5f);
-            }
-            else{
-                this->createMessage("Couldn't dijkstra",0.5f);
+        if (!dijkstraResult) {
+            if (startVertexName == nullptr) {
+                this->createMessage("Please, select start vertex", 0.5f);
+            } else {
+                this->createMessage("Couldn't dijkstra", 0.5f);
             }
             flag = false;
+        } else {
+            for (const auto &pair: dijkstraResult.value()) {
+                auto v = this->mouseEventDispatcher->getEntityByName(pair.first);
+                auto *vertex = dynamic_cast<VertexEntity *>(v);
+                if (vertex) {
+                    auto &w = pair.second;
+                    if (w != GraphHelpers::infitity) {
+                        vertex->setAdditionalLabelString(std::to_string(w));
+                    } else {
+                        vertex->setAdditionalLabelString("inf");
+                    }
+                    vertex->setShowAdditionalLabel(true);
+                }
+            }
+            flag = false;
+            dijkstraResult = std::nullopt;
         }
-        else{
-            for (const auto& pair : dijkstraResult.value()) {
-                ImGui::Text("vertex: %s, cost: %d", pair.first.c_str(),pair.second);
+    }
+    if (!flag) {
+        if (ImGui::Button("Remove upper vertex label")) {
+            for (auto &entity: this->mouseEventDispatcher->getEntities()) {
+                auto vertex = dynamic_cast<VertexEntity *>(entity.get());
+                if (vertex) {
+                    vertex->setShowAdditionalLabel(false);
+                }
             }
         }
-        //TODO: after binding vertex label don't forget set flag false
     }
-
-
-
 
 
     ImGui::End();

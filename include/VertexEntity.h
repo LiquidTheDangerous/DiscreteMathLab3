@@ -17,11 +17,12 @@ class VertexEntity :
 private:
     sf::CircleShape circle;
     sf::Text text;
+    sf::Text additionalLabel;
     std::pair<float, float> mouse_offset;
     std::shared_ptr<MousePositionProvider> mpp;
     sf::Color defaultColor;
     sf::Color hoverColor;
-
+    bool showAdditionalLabel;
     bool followsMouse = false;
     bool rm_flag;
 
@@ -56,6 +57,13 @@ public:
 
     bool needsRemoved() const override;
 
+    void setAdditionalLabelString(const std::string &string);
+
+    std::string getAdditionalLabelString() const;
+
+    bool isShowAdditionalLabel() const;
+
+    void setShowAdditionalLabel(bool showAdditionalLabel);
 };
 
 
