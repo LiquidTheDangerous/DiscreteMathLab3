@@ -422,7 +422,7 @@ bool GraphHelpers::validateSubMatrix(const GraphHelpers::Matrix &m, int lenSub, 
     return true;
 }
 
-auto GraphHelpers::findMaxSubMatrix(const GraphHelpers::Matrix &m) {
+std::tuple<int,int,int> GraphHelpers::findMaxSubMatrix(const GraphHelpers::Matrix &m) {
     auto result = std::tuple<int, int, int>();
     std::get<2>(result) = std::numeric_limits<int>::min();
 
