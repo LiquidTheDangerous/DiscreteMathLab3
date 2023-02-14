@@ -374,20 +374,67 @@ void Application::imguiWindow() {
     }
 #pragma endregion
 #pragma region prima-button-logic
-    if (primaFlag){
-        if (startPrimaVertexName == nullptr){
-            this->createMessage("Please, select start vertex",0.5f);
-        }
-        else if (primaResult){
+    if (primaFlag) {
+        if (startPrimaVertexName == nullptr) {
+            this->createMessage("Please, select start vertex", 0.5f);
+        } else if (primaResult) {
             this->setPathColor(primaResult.value());
-        }
-        else{
-            this->createMessage("Graph is oriented",0.5f);
+        } else {
+            this->createMessage("Graph is oriented", 0.5f);
         }
         primaFlag = false;
         primaResult = std::nullopt;
     }
 #pragma endregion
+
+    static bool ShimbellButtonFlag = false;
+    if (ImGui::Button("Shimbell")) {
+        ShimbellButtonFlag = true;
+    }
+
+
+    if (ShimbellButtonFlag) {
+        ImGui::Begin("Shimbell");
+        static bool updateIncidentMatrixButtonFlag = true;
+        static std::pair<std::vector<std::vector<int>>, std::vector<std::string>> incidentMatrix;
+        static std::vector<std::vector<int>> shimbellMatrix;
+        static int pow = 1;
+        if (updateIncidentMatrixButtonFlag) {
+            incidentMatrix = this->graph.getIncidentMatrix();
+            shimbellMatrix = incidentMatrix.first;
+            updateIncidentMatrixButtonFlag = false;
+        }
+        if (ImGui::Button("update incident matrix")) {
+            updateIncidentMatrixButtonFlag = true;
+        }
+        this->imGuiDrawMatrix(incidentMatrix.second, incidentMatrix.first, "Incident Matrix");
+        if (ImGui::InputInt("pow", &pow)) {
+            if (pow >= 1) {
+                shimbellMatrix = incidentMatrix.first;
+                if (!shimbellMatrix.empty()) {
+                    GraphHelpers::ShimbellPowMatrix(shimbellMatrix, pow);
+                }
+            } else {
+                this->createMessage("Non negative pow", 0.5f);
+            }
+        }
+        this->imGuiDrawMatrix(incidentMatrix.second, shimbellMatrix, "Incident Matrix");
+
+
+        if (ImGui::Button("Close")) {
+            ShimbellButtonFlag = false;
+        }
+
+        ImGui::End();
+    }
+
+//    std::vector<std::string> &header = incidentMatrix.second;
+//    std::vector<std::vector<int>> &matrix = incidentMatrix.first;
+//
+//    const char *matrixId = "Incident Matrix";
+//    imGuiDrawMatrix(header, matrix, matrixId);
+
+//        ShimbellButtonFlag ^= true;
 #pragma region remove-path-button
     if (ImGui::Button("Remove paths")) {
         for (auto &e: this->arrowHolder->getEntities()) {
@@ -438,6 +485,35 @@ void Application::imguiWindow() {
 #pragma endregion
 
     ImGui::End();
+}
+
+void Application::imGuiDrawMatrix(const std::vector<std::string> &header, const std::vector<std::vector<int>> &matrix,
+                                  const char *matrixId) const {
+    if (ImGui::BeginTable(matrixId, std::max(header.size() + 1, (std::size_t) 1))) {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text(" ");
+        static ImU32 bgColor = ImGui::GetColorU32(ImVec4(0.3f, 0.3f, 0.7f, 1.0f));
+        for (int column = 0; column < header.size(); ++column) {
+            ImGui::TableSetColumnIndex(column + 1);
+            ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, bgColor);
+            ImGui::Text("%s", header[column].c_str());
+        }
+        for (int i = 0; i < header.size(); ++i) {
+            ImGui::TableNextRow();
+            for (int j = 0; j < header.size() + 1; ++j) {
+                ImGui::TableSetColumnIndex(j);
+                if (j == 0) {
+                    ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, bgColor);
+                    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.1f);
+                    ImGui::Text("%s", header[i].c_str());
+                } else {
+                    ImGui::Text("%d", matrix[i][j - 1]);
+                }
+            }
+        }
+        ImGui::EndTable();
+    }
 }
 
 void Application::setPathColor(const std::list<std::pair<std::string, std::string>> &list) {

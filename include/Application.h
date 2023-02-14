@@ -96,6 +96,10 @@ public:
     void setPathColor(std::list<std::string> &path);
 
     void setPathColor(const std::list<std::pair<std::string, std::string>> &list);
+
+    void
+    imGuiDrawMatrix(const std::vector<std::string> &header, const std::vector<std::vector<int>> &matrix,
+                    const char *matrixId) const;
 };
 
 
