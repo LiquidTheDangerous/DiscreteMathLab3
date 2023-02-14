@@ -94,6 +94,8 @@ public:
     void createVertexByName(const std::string &text);
 
     void setPathColor(std::list<std::string> &path);
+
+    void setPathColor(const std::list<std::pair<std::string, std::string>> &list);
 };
 
 

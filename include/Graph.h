@@ -15,7 +15,14 @@ class Graph {
 public:
     using VertexT = Vertex;
     using edge = std::pair<VertexT, int>;
-
+    struct UnorientedEdge{
+        UnorientedEdge() = default;
+        UnorientedEdge(const std::string& first, const std::string& second, int w);
+        UnorientedEdge(std::string&& first, std::string&& second, int w);
+        std::string firstName;
+        std::string secondName;
+        int w;
+    };
     explicit Graph() = default;
 
     bool addVertex(const std::string &vertexName);
@@ -29,6 +36,10 @@ public:
     [[nodiscard]] bool contains(const std::string &vertexName) const;
 
     [[nodiscard]] bool contains(const VertexT &vertex) const;
+
+    bool isOriented() const;
+
+    std::list<Graph::UnorientedEdge> getUnorientedEdges() const;
 
     bool connect(const std::string &sourceName, const std::string &destinationName, int len = 1);
 
@@ -52,6 +63,7 @@ public:
 private:
     std::map<VertexT, std::list<edge>> vertices;
 
+    std::vector<std::vector<int>> _getIncidentMatrix() const;
 };
 
 

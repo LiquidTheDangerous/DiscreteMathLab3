@@ -44,6 +44,7 @@ void EntityBounder::pushEntity(Entity *e) {
                 arrow->setShowText(false);
                 arrow->setIsOriented(false);
                 arrow->setW((p->getW()));
+                arrow->setLineColor(p->getLineColor());
                 this->initArrowSignals(arrow.get());
                 app->arrowHolder->getEntities().push_back(arrow);
                 app->graph.setW(first->getName(), second->getName(),p->getW());

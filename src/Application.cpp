@@ -187,10 +187,11 @@ void Application::render(const sf::Time &dt) {
 void Application::imguiWindow() {
     ImGui::Begin("Functions");
     ImGui::StyleColorsDark();
-
+    static bool showApplicationProperties = false;
+    static const char *startDijkstraVertexName = nullptr;
+    static const char *startPrimaVertexName = nullptr;
 #pragma region createVertex
     static char buf[255];
-    static const char *startVertexName = nullptr;
     ImGui::InputText("- vertex name", buf, 255);
     if (ImGui::Button("Create vertex")) {
         this->createVertexByName(buf);
@@ -207,8 +208,8 @@ void Application::imguiWindow() {
     if (ImGui::Button("Dijkstra")) {
         flag ^= true;
         if (flag) {
-            if (startVertexName != nullptr) {
-                dijkstraResult = GraphHelpers::Dijkstra(this->graph, startVertexName);
+            if (startDijkstraVertexName != nullptr) {
+                dijkstraResult = GraphHelpers::Dijkstra(this->graph, startDijkstraVertexName);
             }
         }
     }
@@ -216,11 +217,11 @@ void Application::imguiWindow() {
 #pragma endregion
 #pragma region VertexList
     ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
-    if (ImGui::BeginCombo("Start Vertex Name", startVertexName)) {
+    if (ImGui::BeginCombo("Start Vertex Name", startDijkstraVertexName)) {
         for (auto &e: this->mouseEventDispatcher->getEntities()) {
-            bool is_selected = (startVertexName == e->getName().c_str());
+            bool is_selected = (startDijkstraVertexName == e->getName().c_str());
             if (ImGui::Selectable(e->getName().c_str(), is_selected)) {
-                startVertexName = e->getName().c_str();
+                startDijkstraVertexName = e->getName().c_str();
             }
             if (is_selected) {
                 ImGui::SetItemDefaultFocus();
@@ -232,7 +233,7 @@ void Application::imguiWindow() {
 #pragma region dijkstra-logic
     if (flag) {
         if (!dijkstraResult) {
-            if (startVertexName == nullptr) {
+            if (startDijkstraVertexName == nullptr) {
                 this->createMessage("Please, select start vertex", 0.5f);
             } else {
                 this->createMessage("Couldn't dijkstra", 0.5f);
@@ -303,8 +304,10 @@ void Application::imguiWindow() {
     }
 #pragma endregion
 #pragma region pathButton
+
     static std::optional<std::list<std::string>> path = std::nullopt;
     static bool pathFlag = false;
+    ImGui::SameLine();
     if (ImGui::Button("path ")) {
         path = GraphHelpers::DijkstraPath(this->graph, source, destination);
         if (path) {
@@ -319,6 +322,72 @@ void Application::imguiWindow() {
         path = std::nullopt;
     }
 #pragma endregion
+#pragma region kruskal-button
+    static bool kruskalFlag = false;
+    static std::optional<std::list<std::pair<std::string, std::string>>> kruskalResult = std::nullopt;
+    if (ImGui::Button("Kruskal MST")) {
+        kruskalResult = GraphHelpers::KruskalMST(this->graph);
+        if (kruskalResult) {
+            kruskalFlag ^= true;
+        } else {
+            this->createMessage("Graph is oriented", 0.5f);
+
+        }
+    }
+#pragma endregion
+#pragma region kruskal-button-logic
+    if (kruskalFlag) {
+        if (kruskalResult) {
+            const auto &list = kruskalResult.value();
+            setPathColor(list);
+            kruskalFlag = false;
+            kruskalResult = std::nullopt;
+        }
+    }
+#pragma endregion
+#pragma region prima-buttom
+    static bool primaFlag = false;
+    static auto primaResult = std::optional<std::list<std::pair<std::string, std::string>>>(std::nullopt);
+    if (ImGui::Button("PrimaMST")) {
+        primaFlag ^= true;
+        if (primaFlag) {
+            if (startPrimaVertexName != nullptr) {
+                primaResult = GraphHelpers::PrimaMST(this->graph, startPrimaVertexName);
+            }
+        }
+    }
+    ImGui::SameLine();
+#pragma endregion
+#pragma region VertexList
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
+    if (ImGui::BeginCombo("Prima start vertex name", startPrimaVertexName)) {
+        for (auto &e: this->mouseEventDispatcher->getEntities()) {
+            bool is_selected = (startPrimaVertexName == e->getName().c_str());
+            if (ImGui::Selectable(e->getName().c_str(), is_selected)) {
+                startPrimaVertexName = e->getName().c_str();
+            }
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+#pragma endregion
+#pragma region prima-button-logic
+    if (primaFlag){
+        if (startPrimaVertexName == nullptr){
+            this->createMessage("Please, select start vertex",0.5f);
+        }
+        else if (primaResult){
+            this->setPathColor(primaResult.value());
+        }
+        else{
+            this->createMessage("Graph is oriented",0.5f);
+        }
+        primaFlag = false;
+        primaResult = std::nullopt;
+    }
+#pragma endregion
 #pragma region remove-path-button
     if (ImGui::Button("Remove paths")) {
         for (auto &e: this->arrowHolder->getEntities()) {
@@ -328,7 +397,82 @@ void Application::imguiWindow() {
     }
 #pragma endregion
 
+
+#pragma region show-application-properties-button
+    if (ImGui::Button("Show application properties")) {
+        showApplicationProperties ^= true;
+    }
+#pragma endregion
+
+#pragma region application-properties
+    if (showApplicationProperties) {
+        ImGui::Begin("Application properties");
+#pragma region bgColor-editor
+        static float color[3] = {static_cast<float>(this->bgColor.r) / 255.f,
+                                 static_cast<float>(this->bgColor.g) / 255.f,
+                                 static_cast<float>(this->bgColor.b) / 255.f};
+        if (ImGui::ColorEdit3("Background color", color)) {
+            bgColor.r = static_cast<sf::Uint8>(color[0] * 255.f);
+            bgColor.g = static_cast<sf::Uint8>(color[1] * 255.f);
+            bgColor.b = static_cast<sf::Uint8>(color[2] * 255.f);
+        }
+#pragma endregion
+#pragma region path-color
+        static float pathColor[3] = {static_cast<float>(this->pathColor.r) / 255.f,
+                                     static_cast<float>(this->pathColor.g) / 255.f,
+                                     static_cast<float>(this->pathColor.b) / 255.f};
+        if (ImGui::ColorEdit3("Path color", pathColor)) {
+            this->pathColor.r = static_cast<sf::Uint8>(pathColor[0] * 255.f);
+            this->pathColor.g = static_cast<sf::Uint8>(pathColor[1] * 255.f);
+            this->pathColor.b = static_cast<sf::Uint8>(pathColor[2] * 255.f);
+        }
+#pragma endregion
+        ImGui::SliderFloat("Navigation speed", &this->viewMoveSpeed, 0.5f, 2000.f);
+#pragma region close-button
+        if (ImGui::Button("Close")) {
+            showApplicationProperties = false;
+        }
+#pragma endregion
+        ImGui::End();
+    }
+#pragma endregion
+
     ImGui::End();
+}
+
+void Application::setPathColor(const std::list<std::pair<std::string, std::string>> &list) {
+    for (const auto &edge: list) {
+        auto &firstName = edge.first;
+        auto &secondName = edge.second;
+        auto foundFirst = std::find_if(arrowHolder->getEntities().begin(),
+                                       arrowHolder->getEntities().end(),
+                                       [&firstName, &secondName](const std::shared_ptr<Entity> &e) -> bool {
+                                           auto *arrow = dynamic_cast<Arrow *>(e.get());
+                                           if (!arrow) {
+                                               return false;
+                                           }
+                                           return arrow->getSourceName() == firstName &&
+                                                  arrow->getDestinationName() == secondName;
+                                       });
+        auto foundSecond = std::find_if(arrowHolder->getEntities().begin(),
+                                        arrowHolder->getEntities().end(),
+                                        [&firstName, &secondName](const std::shared_ptr<Entity> &e) -> bool {
+                                            auto *arrow = dynamic_cast<Arrow *>(e.get());
+                                            if (!arrow) {
+                                                return false;
+                                            }
+                                            return arrow->getSourceName() == secondName &&
+                                                   arrow->getDestinationName() == firstName;
+                                        });
+        if (foundFirst != arrowHolder->getEntities().end()) {
+            auto *arrow = static_cast<Arrow *>(foundFirst->get());
+            arrow->setLineColor(pathColor);
+        }
+        if (foundSecond != arrowHolder->getEntities().end()) {
+            auto *arrow = static_cast<Arrow *>(foundSecond->get());
+            arrow->setLineColor(pathColor);
+        }
+    }
 }
 
 void Application::setPathColor(std::list<std::string> &path) {

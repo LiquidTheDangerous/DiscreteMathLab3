@@ -5,6 +5,86 @@
 #include <iostream>
 #include <GraphHelpers.h>
 #include <limits>
+#include <exception>
+
+const GraphHelpers::Bfunc GraphHelpers::ShimbellMult = [](const int &first, const int &second) -> int {
+    if (first == 0 || second == 0) {
+        return 0;
+    }
+    return first + second;
+};
+const GraphHelpers::Bfunc GraphHelpers::ShimbellPlusMin = [](const int &first, const int &second) -> int {
+    if (first == 0) {
+        return second;
+    }
+    if (second == 0) {
+        return first;
+    }
+    return std::min(first, second);
+};
+const GraphHelpers::Bfunc GraphHelpers::ShimbellPlusMax = [](const int &first, const int &second) -> int {
+    if (first == 0) {
+        return second;
+    }
+    if (second == 0) {
+        return first;
+    }
+    return std::max(first, second);
+};
+
+GraphHelpers::Matrix
+GraphHelpers::matrixMultiplication(const GraphHelpers::Matrix &first, const GraphHelpers::Matrix &second,
+                                   const Bfunc &sum,
+                                   const Bfunc &produce) noexcept(false) {
+    if (first[0].size() != second.size()) {
+        throw std::invalid_argument("Invalid arguments");
+    }
+
+
+    auto result = std::vector<std::vector<int>>(first.size(), std::vector<int>(second[0].size(), 0));
+    for (int i = 0; i < first.size(); ++i)
+        for (int j = 0; j < second[0].size(); ++j) {
+            result[i][j] = 0;
+            for (int k = 0; k < first[0].size(); ++k) {
+                auto mult = produce(first[i][k], second[k][j]);
+                result[i][j] = sum(result[i][j], mult);
+            }
+        }
+    return result;
+}
+
+void GraphHelpers::matrixMultiplication(const GraphHelpers::Matrix &first, const GraphHelpers::Matrix &second,
+                                        GraphHelpers::Matrix &result, const GraphHelpers::Bfunc &sum,
+                                        const GraphHelpers::Bfunc &produce) noexcept(false) {
+    if (first[0].size() != second.size()) {
+        throw std::invalid_argument("Invalid arguments");
+    }
+    if (result.size() != first.size()) {
+        throw std::invalid_argument("Invalid arguments");
+    }
+    if (result[0].size() != second[0].size()) {
+        throw std::invalid_argument("Invalid arguments");
+    }
+
+    for (int i = 0; i < first.size(); ++i)
+        for (int j = 0; j < second[0].size(); ++j) {
+            result[i][j] = 0;
+            for (int k = 0; k < first[0].size(); ++k) {
+                auto mult = produce(first[i][k], second[k][j]);
+                result[i][j] = sum(result[i][j], mult);
+            }
+        }
+}
+
+void GraphHelpers::ShimbellPowMatrix(GraphHelpers::Matrix &in, const int &power) {
+
+    auto cpy1 = in;
+    for (int i = 0; i < power - 1; ++i) {
+        auto cpy2 = in;
+        GraphHelpers::matrixMultiplication(cpy2,cpy1, in, GraphHelpers::ShimbellPlusMin, GraphHelpers::ShimbellMult);
+    }
+}
+
 
 void GraphHelpers::_dfs(const Graph &graph, std::set<std::string> &visited, const std::string &startVertexName) {
     auto iter = visited.insert(startVertexName);
@@ -214,10 +294,10 @@ GraphHelpers::DijkstraPath(const Graph &graph, const std::string &sourceVertexNa
     if (!dijkstraResult) {
         return std::nullopt;
     }
-    if (dijkstraResult.value()[sourceVertexName] == GraphHelpers::infitity){
+    if (dijkstraResult.value()[sourceVertexName] == GraphHelpers::infitity) {
         return std::nullopt;
     }
-    if (dijkstraResult.value()[destinationVertexName] == GraphHelpers::infitity){
+    if (dijkstraResult.value()[destinationVertexName] == GraphHelpers::infitity) {
         return std::nullopt;
     }
     auto result = std::list<std::string>();
@@ -231,17 +311,17 @@ GraphHelpers::DijkstraPath(const Graph &graph, const std::string &sourceVertexNa
     for (;;) {
         std::size_t j = indices[*currentVertex];
         result.push_front(*currentVertex);
-        if (*currentVertex == sourceVertexName){
+        if (*currentVertex == sourceVertexName) {
             break;
         }
         for (int i = 0; i < verticesCount; ++i) {
             if (matrix[i][j] == 0) {
                 continue;
             }
-            const auto& edgeWeight = matrix[i][j];
-            const auto& currentVertexWeight = dijkstraResult.value()[*currentVertex];
-            const auto& nbrVertexWeight = dijkstraResult.value()[vertices[i]];
-            if (nbrVertexWeight +edgeWeight == currentVertexWeight){
+            const auto &edgeWeight = matrix[i][j];
+            const auto &currentVertexWeight = dijkstraResult.value()[*currentVertex];
+            const auto &nbrVertexWeight = dijkstraResult.value()[vertices[i]];
+            if (nbrVertexWeight + edgeWeight == currentVertexWeight) {
                 currentVertex = &vertices[i];
                 break;
             }
@@ -251,3 +331,79 @@ GraphHelpers::DijkstraPath(const Graph &graph, const std::string &sourceVertexNa
 
     return std::move(result);
 }
+
+std::optional<std::list<std::pair<std::string, std::string>>> GraphHelpers::KruskalMST(const Graph &graph) {
+    if (graph.isOriented()) {
+        return std::nullopt;
+    }
+    std::list<std::pair<std::string, std::string>> result;
+    auto edges = graph.getUnorientedEdges();
+    std::list<std::set<std::string>> components;
+    for (const auto &v: graph.getVerticesVect()) {
+        std::set<std::string> comp;
+        comp.insert(v);
+        components.push_back(std::move(comp));
+    }
+    edges.sort(
+            [](const Graph::UnorientedEdge &first, const Graph::UnorientedEdge &second) -> bool {
+                return first.w < second.w;
+            });
+    for (auto &edge: edges) {
+        auto &first = edge.firstName;
+        auto &second = edge.secondName;
+
+        auto iterFirst = std::find_if(components.begin(), components.end(),
+                                      [&first](const std::set<std::string> &comp) -> bool {
+                                          return comp.contains(first);
+                                      });
+        auto iterSecond = std::find_if(components.begin(), components.end(),
+                                       [&second](const std::set<std::string> &comp) -> bool {
+                                           return comp.contains(second);
+                                       });
+        if (*iterFirst == *iterSecond) {
+            continue;
+        }
+        (*iterFirst).merge(*iterSecond);
+        components.erase(iterSecond);
+        result.emplace_back(std::move(first), std::move(second));
+    }
+
+    return std::move(result);
+}
+
+std::optional<std::list<std::pair<std::string, std::string>>>
+GraphHelpers::PrimaMST(const Graph &graph, const std::string &start_vertex) {
+    if (graph.isOriented()) {
+        return std::nullopt;
+    }
+    std::list<std::pair<std::string, std::string>> result;
+    std::set<std::string> currentVertexSet;
+    currentVertexSet.emplace(start_vertex);
+    while (true) {
+        int min = std::numeric_limits<int>::max();
+        const std::string *minNbr = nullptr;
+        const std::string *vertexFrom = nullptr;
+        for (const auto &vertex: currentVertexSet) {
+            const auto &nbrs = graph.getNeighbors(vertex);
+            for (const auto &nbr: nbrs) {
+                if (currentVertexSet.contains(nbr.first.getName())) {
+                    continue;
+                }
+                if (min > nbr.second) {
+                    min = nbr.second;
+                    minNbr = &nbr.first.getName();
+                    vertexFrom = &vertex;
+                }
+            }
+        }
+        if (minNbr == nullptr) {
+            break;
+        }
+        currentVertexSet.emplace(*minNbr);
+        result.emplace_back(*vertexFrom, *minNbr);
+    }
+    return std::move(result);
+}
+
+
+
