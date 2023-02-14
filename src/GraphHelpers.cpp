@@ -405,5 +405,45 @@ GraphHelpers::PrimaMST(const Graph &graph, const std::string &start_vertex) {
     return std::move(result);
 }
 
+bool GraphHelpers::validateSubMatrix(const GraphHelpers::Matrix &m, int lenSub, int i_start, int j_start) {
+    for (auto i = 0; i < lenSub; ++i) {
+        for (auto j = 0; j < lenSub; ++j) {
+            if (i == j) {
+                if (m[i + i_start][j + j_start] != 0) {
+                    return false;
+                }
+            } else {
+                if (m[i + i_start][j + j_start] != 1) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+auto GraphHelpers::findMaxSubMatrix(const GraphHelpers::Matrix &m) {
+    auto result = std::tuple<int, int, int>();
+    std::get<2>(result) = std::numeric_limits<int>::min();
+
+    for (int i = 0; i < m.size(); ++i){
+        for (int j = 0; j < m.size(); ++j){
+            for (int len = 1;  len <= m.size() - i && len <= m.size() - j;++len){
+                if (validateSubMatrix(m,len,i,j)){
+                    if (len > std::get<2>(result)){
+                        std::get<2>(result) = len;
+                        std::get<0>(result) = i;
+                        std::get<1>(result) = j;
+                    }
+                }
+                else{
+                    break;
+                }
+
+            }
+        }
+    }
+    return result;
+}
 
 

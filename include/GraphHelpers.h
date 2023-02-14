@@ -69,6 +69,9 @@ public:
     static std::optional<std::map<int, std::set<std::string>>> TopologicalSort(const Graph &graph);
 
 
+    bool validateSubMatrix(const Matrix &m, int lenSub, int i_start, int j_start);
+
+    std::tuple<int, int, int> findMaxSubMatrix(const Matrix &m);
 };
 
 #endif //DISCRETEMATHLAB3_GRAPHHELPERS_H
