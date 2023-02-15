@@ -59,11 +59,13 @@ public:
 
     [[nodiscard]] std::vector<std::string> getVerticesVect() const;
 
+    [[nodiscard]] std::optional<std::set<std::string>> getNeighborsNameSet(const std::string& vertexName) const;
+
     [[nodiscard]] std::map<std::string, size_t> getVerticesIndices() const;
+    [[nodiscard]] std::vector<std::vector<int>> _getIncidentMatrix() const;
 private:
     std::map<VertexT, std::list<edge>> vertices;
 
-    std::vector<std::vector<int>> _getIncidentMatrix() const;
 };
 
 

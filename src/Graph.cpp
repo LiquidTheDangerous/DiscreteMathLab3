@@ -202,8 +202,7 @@ bool Graph::isOriented() const {
                     if (iter2->second != iter1->second) {
                         return true;
                     }
-                }
-                else{
+                } else {
                     return true;
                 }
             }
@@ -215,7 +214,7 @@ bool Graph::isOriented() const {
 std::list<Graph::UnorientedEdge> Graph::getUnorientedEdges() const {
     std::list<Graph::UnorientedEdge> result;
 
-        for (auto &&v1: vertices) {
+    for (auto &&v1: vertices) {
         for (auto &&v2: vertices) {
             const auto iter1 = std::find_if(v1.second.begin(), v1.second.end(),
                                             [&v2](const edge &e) -> bool {
@@ -229,7 +228,7 @@ std::list<Graph::UnorientedEdge> Graph::getUnorientedEdges() const {
             if (iter1 != v1.second.end()) {
                 if (iter2 != v2.second.end()) {
                     if (iter2->second == iter1->second) {
-                        result.emplace_back(iter1->first.getName(),iter2->first.getName(),iter1->second);
+                        result.emplace_back(iter1->first.getName(), iter2->first.getName(), iter1->second);
                     }
                 }
             }
@@ -240,14 +239,27 @@ std::list<Graph::UnorientedEdge> Graph::getUnorientedEdges() const {
     return result;
 }
 
-Graph::UnorientedEdge::UnorientedEdge(const std::string &first, const std::string &second, int w):
-firstName(first),
-secondName(second),
-w(w){
+std::optional<std::set<std::string>> Graph::getNeighborsNameSet(const std::string &vertexName) const {
+    std::set<std::string> result;
+    auto iter = this->vertices.find(Vertex(vertexName));
+    if (iter != this->vertices.end()){
+        for (auto& nbr : iter->second){
+            result.insert(nbr.first.getName());
+        }
+        return std::move(result);
+    }
+
+    return std::nullopt;
+}
+
+Graph::UnorientedEdge::UnorientedEdge(const std::string &first, const std::string &second, int w) :
+        firstName(first),
+        secondName(second),
+        w(w) {
 }
 
 Graph::UnorientedEdge::UnorientedEdge(std::string &&first, std::string &&second, int w) :
-firstName(std::move(first)),
-secondName(std::move(second)),
-w(w){
+        firstName(std::move(first)),
+        secondName(std::move(second)),
+        w(w) {
 }

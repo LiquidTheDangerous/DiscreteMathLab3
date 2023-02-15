@@ -16,6 +16,7 @@ class GraphHelpers {
 public:
     using Matrix = std::vector<std::vector<int>>;
     using Bfunc = std::function<int(int, int)>;
+    static constexpr const int npos = std::numeric_limits<int>::min();
 private:
 
     static constexpr int null = 0;
@@ -69,9 +70,15 @@ public:
     static std::optional<std::map<int, std::set<std::string>>> TopologicalSort(const Graph &graph);
 
 
-    bool validateSubMatrix(const Matrix &m, int lenSub, int i_start, int j_start);
+#pragma region Clique
 
-    std::tuple<int, int, int> findMaxSubMatrix(const Matrix &m);
+private:
+
+    static void bronKerbosh(const std::set<std::string>& result, std::set<std::string> candidates, std::set<std::string> x,
+                     std::list<std::set<std::string>> &results, const Graph &graph);
+public:
+    static std::list<std::set<std::string>> BronKerbrosh(const Graph& graph);
+#pragma endregion
 };
 
 #endif //DISCRETEMATHLAB3_GRAPHHELPERS_H

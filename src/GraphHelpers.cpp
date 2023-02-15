@@ -81,7 +81,7 @@ void GraphHelpers::ShimbellPowMatrix(GraphHelpers::Matrix &in, const int &power)
     auto cpy1 = in;
     for (int i = 0; i < power - 1; ++i) {
         auto cpy2 = in;
-        GraphHelpers::matrixMultiplication(cpy2,cpy1, in, GraphHelpers::ShimbellPlusMin, GraphHelpers::ShimbellMult);
+        GraphHelpers::matrixMultiplication(cpy2, cpy1, in, GraphHelpers::ShimbellPlusMin, GraphHelpers::ShimbellMult);
     }
 }
 
@@ -261,14 +261,12 @@ GraphHelpers::Dijkstra(const Graph &graph, const std::string &startVertexName) {
             }
             ++c;
         }
-
         //if index not found then break
         if (index == -1) {
             break;
         }
 
         currentVertex = &vertices[index];
-
     }
 
     int c = 0;
@@ -405,45 +403,41 @@ GraphHelpers::PrimaMST(const Graph &graph, const std::string &start_vertex) {
     return std::move(result);
 }
 
-bool GraphHelpers::validateSubMatrix(const GraphHelpers::Matrix &m, int lenSub, int i_start, int j_start) {
-    for (auto i = 0; i < lenSub; ++i) {
-        for (auto j = 0; j < lenSub; ++j) {
-            if (i == j) {
-                if (m[i + i_start][j + j_start] != 0) {
-                    return false;
-                }
-            } else {
-                if (m[i + i_start][j + j_start] != 1) {
-                    return false;
-                }
-            }
+void
+GraphHelpers::bronKerbosh(const std::set<std::string>& result,
+                          std::set<std::string> candidates,
+                          std::set<std::string> x,
+                          std::list<std::set<std::string>> &results,
+                          const Graph &graph) {
+    if (candidates.size() == 0 && x.size() == 0) {
+        results.push_back(result);
+    }
+    auto iter = candidates.begin();
+    while (iter != candidates.end() && !candidates.empty()) {
+        auto nbrs = graph.getNeighborsNameSet(*iter).value();
+        std::set<std::string> new_candidates;
+        std::set<std::string> new_result = result;
+        std::set<std::string> new_x;
+        new_result.insert(*iter);
+        std::set_intersection(candidates.begin(), candidates.end(),nbrs.begin(),nbrs.end(),std::inserter(new_candidates,std::end(new_candidates)));
+        std::set_intersection(x.begin(), x.end(),nbrs.begin(),nbrs.end(),std::inserter(new_x,std::end(new_x)));
+        bronKerbosh(new_result,std::move(new_candidates),std::move(new_x),results,graph);
+        if (iter != candidates.end()){
+            candidates.erase(iter);
+            x.insert(*iter);
+            iter = std::begin(candidates);
         }
     }
-    return true;
 }
 
-std::tuple<int,int,int> GraphHelpers::findMaxSubMatrix(const GraphHelpers::Matrix &m) {
-    auto result = std::tuple<int, int, int>();
-    std::get<2>(result) = std::numeric_limits<int>::min();
-
-    for (int i = 0; i < m.size(); ++i){
-        for (int j = 0; j < m.size(); ++j){
-            for (int len = 1;  len <= m.size() - i && len <= m.size() - j;++len){
-                if (validateSubMatrix(m,len,i,j)){
-                    if (len > std::get<2>(result)){
-                        std::get<2>(result) = len;
-                        std::get<0>(result) = i;
-                        std::get<1>(result) = j;
-                    }
-                }
-                else{
-                    break;
-                }
-
-            }
-        }
-    }
-    return result;
+std::list<std::set<std::string>> GraphHelpers::BronKerbrosh(const Graph &graph) {
+    auto results = std::list<std::set<std::string>>();
+    auto start_result = std::set<std::string>();
+    auto start_x = std::set<std::string>();
+    auto vertices = graph.getVerticesVect();
+    auto start_candidates = std::set<std::string>(vertices.begin(),vertices.end());
+    bronKerbosh(start_result,std::move(start_candidates),std::move(start_x),results,graph);
+    return results;
 }
 
 
