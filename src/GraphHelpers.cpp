@@ -407,10 +407,10 @@ void
 GraphHelpers::bronKerbosh(const std::set<std::string>& result,
                           std::set<std::string> candidates,
                           std::set<std::string> x,
-                          std::list<std::set<std::string>> &results,
+                          std::list<std::vector<std::string>> &results,
                           const Graph &graph) {
-    if (candidates.size() == 0 && x.size() == 0) {
-        results.push_back(result);
+    if (candidates.empty() && x.empty()) {
+        results.emplace_back(result.begin(),result.end());
     }
     auto iter = candidates.begin();
     while (iter != candidates.end() && !candidates.empty()) {
@@ -430,14 +430,16 @@ GraphHelpers::bronKerbosh(const std::set<std::string>& result,
     }
 }
 
-std::list<std::set<std::string>> GraphHelpers::BronKerbrosh(const Graph &graph) {
-    auto results = std::list<std::set<std::string>>();
+std::optional<std::list<std::vector<std::string>>> GraphHelpers::BronKerbrosh(const Graph &graph) {
+    if (graph.isOriented()){
+        return std::nullopt;
+    }
+    auto results = std::list<std::vector<std::string>>();
     auto start_result = std::set<std::string>();
     auto start_x = std::set<std::string>();
     auto vertices = graph.getVerticesVect();
     auto start_candidates = std::set<std::string>(vertices.begin(),vertices.end());
     bronKerbosh(start_result,std::move(start_candidates),std::move(start_x),results,graph);
-    return results;
+    return std::move(results);
 }
-
 

@@ -66,6 +66,7 @@ Application::Application(int width, int height, const std::string &title) :
 
 
     this->mouseEventDispatcher->setMousePositionProvider(mppWorldPos);
+
     this->arrowHolder->setMousePositionProvider(mppWorldPos);
 
     this->guiEventDispatcher->setMousePositionProvider(mppGUI);
@@ -150,21 +151,9 @@ void Application::update(const sf::Time &dt) {
     ImGui::SFML::Update(window, dt);
     this->mouseEventDispatcher->update(dt.asSeconds());
     this->arrowHolder->update(dt.asSeconds());
-//    updateArrows(dt);
-
     this->guiEventDispatcher->update(dt.asSeconds());
-}
 
-void Application::updateArrows(const sf::Time &dt) {
-    bool rm = false;
 
-    for (auto &item: arrows) {
-        item->update(dt.asSeconds());
-        rm |= item->needsRemoved();
-    }
-    if (rm) {
-        arrows.remove_if([](auto &item) -> bool { return item->needsRemoved(); });
-    }
 }
 
 void Application::render(const sf::Time &dt) {
@@ -173,14 +162,14 @@ void Application::render(const sf::Time &dt) {
     this->window.draw(*this->mouseEventDispatcher);
 
     this->window.draw(*this->arrowHolder);
-//    drawArrows();
 
     this->window.setView(this->gui_view);
     this->window.draw(*this->guiEventDispatcher);
 
     imguiWindow();
-
     ImGui::SFML::Render(window);
+
+
     this->window.display();
 }
 
@@ -386,7 +375,7 @@ void Application::imguiWindow() {
         primaResult = std::nullopt;
     }
 #pragma endregion
-
+#pragma region shimbell
     static bool ShimbellButtonFlag = false;
     if (ImGui::Button("Shimbell")) {
         ShimbellButtonFlag = true;
@@ -427,14 +416,9 @@ void Application::imguiWindow() {
 
         ImGui::End();
     }
+#pragma endregion
 
-//    std::vector<std::string> &header = incidentMatrix.second;
-//    std::vector<std::vector<int>> &matrix = incidentMatrix.first;
-//
-//    const char *matrixId = "Incident Matrix";
-//    imGuiDrawMatrix(header, matrix, matrixId);
 
-//        ShimbellButtonFlag ^= true;
 #pragma region remove-path-button
     if (ImGui::Button("Remove paths")) {
         for (auto &e: this->arrowHolder->getEntities()) {
@@ -444,6 +428,43 @@ void Application::imguiWindow() {
     }
 #pragma endregion
 
+
+    static bool bronKerboshFlag = false;
+    static std::optional<std::list<std::vector<std::string>>> bronKerboshResult(std::nullopt);
+    if (ImGui::Button("BronKerbosh")) {
+        bronKerboshFlag ^= true;
+        if (bronKerboshFlag) {
+            bronKerboshResult = GraphHelpers::BronKerbrosh(this->graph);
+        }
+    }
+    if (bronKerboshFlag) {
+
+
+        if (bronKerboshResult) {
+            bronKerboshFlag = false;
+            auto start = 0.0f;
+            auto step = 1.f / (float) bronKerboshResult.value().size();
+            for (auto &vect: bronKerboshResult.value()) {
+                auto color = ColorHelpers::interpolate(sf::Color::Red, sf::Color(60, 0, 100), start,
+                                                       ColorHelpers::linear);
+                this->setPathColor(vect, color, true);
+                start += step;
+            }
+
+        }
+//        bronKerboshResult = std::nullopt;
+    }
+    if (bronKerboshResult) {
+        ImGui::NewLine();
+        for (auto &v: bronKerboshResult.value()) {
+            for (auto &s: v) {
+                ImGui::SameLine();
+                ImGui::Text("%s", s.c_str());
+            }
+            ImGui::NewLine();
+        }
+
+    }
 
 #pragma region show-application-properties-button
     if (ImGui::Button("Show application properties")) {
@@ -541,11 +562,11 @@ void Application::setPathColor(const std::list<std::pair<std::string, std::strin
                                                    arrow->getDestinationName() == firstName;
                                         });
         if (foundFirst != arrowHolder->getEntities().end()) {
-            auto *arrow = static_cast<Arrow *>(foundFirst->get());
+            auto *arrow = dynamic_cast<Arrow *>(foundFirst->get());
             arrow->setLineColor(pathColor);
         }
         if (foundSecond != arrowHolder->getEntities().end()) {
-            auto *arrow = static_cast<Arrow *>(foundSecond->get());
+            auto *arrow = dynamic_cast<Arrow *>(foundSecond->get());
             arrow->setLineColor(pathColor);
         }
     }
@@ -588,12 +609,6 @@ void Application::setPathColor(std::list<std::string> &path) {
             arrow->setLineColor(pathColor);
         }
 
-    }
-}
-
-void Application::drawArrows() {
-    for (auto &item: arrows) {
-        window.draw(*item);
     }
 }
 
@@ -669,4 +684,77 @@ void Application::createVertexByName(const std::string &text) {
     graph.addVertex(text);
     createMessage("Vertex created", 0.5f);
     colorizeVertices();
+}
+
+void Application::setPathColor(std::vector<std::string> &path, sf::Color pathColor, bool cycle) {
+    auto iter = path.begin();
+    auto start = path.begin();
+    std::vector<std::string>::iterator end;
+    end = std::next(iter, (std::ptrdiff_t) (path.size() - 1));
+    if (cycle) {
+        for (int i = 0; i < path.size() - 1; ++i) {
+            for (int j = i + 1; j < path.size(); ++j) {
+                auto &firstName = path[i];
+                auto &secondName = path[j];
+                setEdgeColor(pathColor, firstName, secondName);
+            }
+        }
+        return;
+    }
+    for (; iter != end; ++iter) {
+        auto &current = iter;
+        auto next = std::next(iter);
+        auto &firstName = *current;
+        auto &secondName = *next;
+        setEdgeColor(pathColor, firstName, secondName);
+    }
+
+}
+
+void Application::setEdgeColor(const sf::Color &pathColor, const std::string &firstName,
+                               const std::string &secondName) const {
+    auto foundFirst = std::find_if(arrowHolder->getEntities().begin(),
+                                   arrowHolder->getEntities().end(),
+                                   [&firstName, &secondName](const std::shared_ptr<Entity> &e) -> bool {
+                                       auto *arrow = dynamic_cast<Arrow *>(e.get());
+                                       if (!arrow) {
+                                           return false;
+                                       }
+                                       return arrow->getSourceName() == firstName &&
+                                              arrow->getDestinationName() == secondName;
+                                   });
+    auto foundSecond = std::find_if(arrowHolder->getEntities().begin(),
+                                    arrowHolder->getEntities().end(),
+                                    [&firstName, &secondName](const std::shared_ptr<Entity> &e) -> bool {
+                                        auto *arrow = dynamic_cast<Arrow *>(e.get());
+                                        if (!arrow) {
+                                            return false;
+                                        }
+                                        return arrow->getSourceName() == secondName &&
+                                               arrow->getDestinationName() == firstName;
+                                    });
+    if (foundFirst != arrowHolder->getEntities().end()) {
+        auto *arrow = dynamic_cast<Arrow *>(foundFirst->get());
+        arrow->setLineColor(pathColor);
+    }
+    if (foundSecond != arrowHolder->getEntities().end()) {
+        auto *arrow = dynamic_cast<Arrow *>(foundSecond->get());
+        arrow->setLineColor(pathColor);
+    }
+}
+
+Application::ByPressingRightMouseButtonOnVertex::ByPressingRightMouseButtonOnVertex(Application *app, Entity *e) {
+    this->app = app;
+    this->e = e;
+}
+
+void Application::ByPressingRightMouseButtonOnVertex::operator()(void *param) {
+    if (app->entityBounder->isBounding()) {
+        app->createMessage("Cannot remove vertex while creating edge", 0.5f);
+        return;
+    }
+    e->markToRemove(true);
+    app->graph.removeVertex((e->getName()));
+    app->createMessage("Vertex removed", 0.5f);
+    app->colorizeVertices();
 }

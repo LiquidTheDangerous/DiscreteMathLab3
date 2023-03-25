@@ -16,9 +16,9 @@ FetchContent_Declare(
   GIT_TAG        master
 )
 
+
 FetchContent_MakeAvailable(imgui)
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 set(LINK_DEPS_STATIC ON)
 set(BUILD_SHARED_LIBS OFF)
-FetchContent_MakeAvailable(imgui)
 FetchContent_MakeAvailable(imgui-sfml)

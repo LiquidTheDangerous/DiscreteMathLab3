@@ -15,7 +15,6 @@
 #include <algorithm>
 
 
-
 class EntityEventDispatcherImpl :
         public EntityEventDispatcher {
 public:
@@ -44,6 +43,7 @@ public:
 
 private:
     void removeEntities();
+
     std::shared_ptr<MousePositionProvider> mousePositionProvider;
     std::list<EntityPtr> entities;
 

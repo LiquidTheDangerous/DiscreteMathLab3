@@ -16,6 +16,7 @@ enum signals {
     onEnteredText,
     onEndEditingText,
     onDelete,
+    onStateChanged,
     signalsCount
 };
 #endif //DISCRETEMATHLAB3_SIGNALS_HPP

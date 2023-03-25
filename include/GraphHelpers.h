@@ -75,9 +75,9 @@ public:
 private:
 
     static void bronKerbosh(const std::set<std::string>& result, std::set<std::string> candidates, std::set<std::string> x,
-                     std::list<std::set<std::string>> &results, const Graph &graph);
+                            std::list<std::vector<std::string>> &results, const Graph &graph);
 public:
-    static std::list<std::set<std::string>> BronKerbrosh(const Graph& graph);
+    static std::optional<std::list<std::vector<std::string>>> BronKerbrosh(const Graph& graph);
 #pragma endregion
 };
 

@@ -46,8 +46,8 @@ void EntityBounder::pushEntity(Entity *e) {
                 arrow->setW((p->getW()));
                 arrow->setLineColor(p->getLineColor());
                 this->initArrowSignals(arrow.get());
-                app->arrowHolder->getEntities().push_back(arrow);
-                app->graph.setW(first->getName(), second->getName(),p->getW());
+                app->arrowHolder->addEntity(arrow);
+                app->graph.setW(first->getName(), second->getName(), p->getW());
                 app->createMessage("Unoriented Edge created", 0.5f);
 
             } else if (transIter != app->arrowHolder->getEntities().end() &&
@@ -62,7 +62,7 @@ void EntityBounder::pushEntity(Entity *e) {
                        iter == app->arrowHolder->getEntities().end()) {
                 auto arrow = std::make_shared<Arrow>(first, second, app->font, app->view);
                 this->initArrowSignals(arrow.get());
-                app->arrowHolder->getEntities().push_back(arrow);
+                app->arrowHolder->addEntity(arrow);
                 app->graph.connect(first->getName(), second->getName());
                 app->createMessage("Edge created", 0.5f);
             }

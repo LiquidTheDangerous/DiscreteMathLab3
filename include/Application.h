@@ -42,34 +42,16 @@ private:
     void onSortBtnClicked(void *);
 
     struct ByPressingRightMouseButtonOnVertex {
+        ByPressingRightMouseButtonOnVertex(Application *app, Entity *e);
 
-        ByPressingRightMouseButtonOnVertex(Application *app, Entity *e) {
-            this->app = app;
-            this->e = e;
-        }
-
-        void operator()(void *param) {
-            if (app->entityBounder->isBounding()) {
-                app->createMessage("Cannot remove vertex while creating edge", 0.5f);
-                return;
-            }
-            e->markToRemove(true);
-            app->graph.removeVertex((e->getName()));
-            app->createMessage("Vertex removed", 0.5f);
-            app->colorizeVertices();
-        };
+        void operator()(void *param);;
         Application *app;
         Entity *e;
     };
 
     friend class EntityBounder;
 
-    void updateArrows(const sf::Time &dt);
-
-    void drawArrows();
-
     std::shared_ptr<EntityBounder> entityBounder;
-    std::list<std::shared_ptr<Arrow>> arrows;
 
     void colorizeVertices() const;
 
@@ -79,6 +61,7 @@ private:
     std::shared_ptr<Label> label;
     sf::Color pathColor;
     sf::Color defaultColor;
+
 
 public:
     void run();
@@ -93,13 +76,17 @@ public:
 
     void createVertexByName(const std::string &text);
 
+
     void setPathColor(std::list<std::string> &path);
+    void setPathColor(std::vector<std::string> &path, sf::Color pathColor = sf::Color::Green, bool cycle = false);
 
     void setPathColor(const std::list<std::pair<std::string, std::string>> &list);
 
     void
     imGuiDrawMatrix(const std::vector<std::string> &header, const std::vector<std::vector<int>> &matrix,
                     const char *matrixId) const;
+
+    void setEdgeColor(const sf::Color &pathColor, const std::string &firstName, const std::string &secondName) const;
 };
 
 

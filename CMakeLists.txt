@@ -37,7 +37,8 @@ set(SOURCES
         src/Button.cpp
         src/GuiComponent.cpp
         src/ViewPositionProvider.cpp
-        src/ViewPositionProviderImpl.cpp)
+        src/ViewPositionProviderImpl.cpp
+        )
 
 set(HEADERS
         include/Vertex.h
@@ -60,9 +61,10 @@ set(HEADERS
         include/ColorHelpers.h
         include/Button.hpp
         include/ViewPositionProvider.hpp
-        include/ViewPositionProviderImpl.hpp)
+        include/ViewPositionProviderImpl.hpp
+        )
 
-add_executable(${PROJECT_NAME})
+add_executable(${PROJECT_NAME}  )
 target_sources(${PROJECT_NAME}
         PRIVATE ${SOURCES}
         PUBLIC ${HEADERS})
@@ -73,5 +75,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${SFML_INCLUDE_DIR})
 
 add_subdirectory(dependencies)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics sfml-system  ImGui-SFML::ImGui-SFML)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        sfml-graphics
+        sfml-system
+        ImGui-SFML::ImGui-SFML)
 

@@ -14,6 +14,7 @@ void EntityEventDispatcherImpl::draw(sf::RenderTarget &target, sf::RenderStates 
 }
 
 void EntityEventDispatcherImpl::addEntity(const std::shared_ptr<Entity> &entity) {
+    this->emit(signals::onStateChanged,this);
     this->entities.push_back(entity);
 }
 
@@ -90,7 +91,9 @@ void EntityEventDispatcherImpl::setMousePositionProvider(std::shared_ptr<MousePo
 void EntityEventDispatcherImpl::update(float dt) {
     auto nr = false;
     for (auto &e: this->entities) {
-        e->update(dt);
+        if (!e->needsRemoved()){
+            e->update(dt);
+        }
         nr |= e->needsRemoved();
     }
     if (nr){
@@ -111,7 +114,11 @@ void EntityEventDispatcherImpl::removeEntities() {
     {
         return e->needsRemoved();
     });
+    if (iter!=this->entities.end()){
+        this->emit(onStateChanged, this);
+    }
     this->entities.erase(iter,this->entities.end());
+
 }
 
 std::size_t EntityEventDispatcherImpl::getEntitiesSize() const {
