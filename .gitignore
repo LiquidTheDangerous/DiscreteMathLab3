@@ -1,7 +1,11 @@
 
 cmake-build-debug
 .idea
+build-visual-studio
+cmake-build-debug-event-trace
+cmake-build-debug-mingw
+cmake-build-release
+build
 classDiagramm.puml
 CMakeFiles
-build
 lib
