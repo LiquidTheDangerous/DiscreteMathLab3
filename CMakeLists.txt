@@ -5,7 +5,17 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-#find_package(SFML COMPONENTS graphics)
+set(SFML_STATIC_LIBRARIES TRUE)
+
+set(SFML_DIR "${PROJECT_SOURCE_DIR}/lib/SFML-2.5.1")
+
+set(SFML_INCLUDE_DIR ${SFML_DIR}/include)
+
+set(SFML_ROOT ${SFML_DIR})
+
+set(CMAKE_MODULE_PATH "${SFML_DIR}/cmake/Modules" ${CMAKE_MODULE_PATH})
+
+find_package(SFML COMPONENTS graphics)
 
 
 set(SOURCES
@@ -75,11 +85,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         sfml-graphics
         sfml-system
         ImGui-SFML::ImGui-SFML)
-
-if (WIN32 AND BUILD_SHARED_LIBS)
-    add_custom_command(TARGET DiscreteMathLab3 POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:DiscreteMathLab3> $<TARGET_FILE_DIR:DiscreteMathLab3> COMMAND_EXPAND_LISTS)
-endif()
-
-install(TARGETS DiscreteMathLab3)
 
