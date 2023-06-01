@@ -19,7 +19,9 @@ find_package(SFML COMPONENTS graphics)
 
 
 set(SOURCES
+        src/Voyager.cpp
         src/main.cpp
+        src/PathFinder.cpp
         src/Vertex.cpp
         src/Graph.cpp
         src/GraphHelpers.cpp
@@ -41,6 +43,8 @@ set(SOURCES
         )
 
 set(HEADERS
+        include/Voyager.h
+        include/PathFinder.h
         include/Vertex.h
         include/Graph.h
         include/GraphHelpers.h
@@ -77,6 +81,7 @@ add_subdirectory(dependencies)
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+        fmt::fmt
         sfml-graphics
         sfml-system
         ImGui-SFML::ImGui-SFML)

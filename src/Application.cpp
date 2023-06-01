@@ -15,8 +15,8 @@
 #include <imgui.h>
 #include <optional>
 #include <imgui-SFML.h>
-#include <complex>
-
+#include <Voyager.h>
+#include <fmt/core.h>
 
 Application::Application(int width, int height, const std::string &title) :
         window(sf::VideoMode(width, height), title, sf::Style::Default),
@@ -179,12 +179,82 @@ void Application::imguiWindow() {
     static bool showApplicationProperties = false;
     static const char *startDijkstraVertexName = nullptr;
     static const char *startPrimaVertexName = nullptr;
+    static const char *startVoyageurVertexName = nullptr;
 #pragma region createVertex
     static char buf[255];
     ImGui::InputText("- vertex name", buf, 255);
     if (ImGui::Button("Create vertex")) {
         this->createVertexByName(buf);
     }
+
+#pragma region VertexList
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() * 0.2f);
+    if (ImGui::BeginCombo("Start Vertex Name", startVoyageurVertexName)) {
+        for (auto &e: this->mouseEventDispatcher->getEntities()) {
+            bool is_selected = (startVoyageurVertexName == e->getName().c_str());
+            if (ImGui::Selectable(e->getName().c_str(), is_selected)) {
+                startVoyageurVertexName = e->getName().c_str();
+            }
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+#pragma endregion
+
+    ImGui::SameLine();
+
+#pragma region Commis-voyageur
+    if (ImGui::Button("Voyageur")) {
+        if (startVoyageurVertexName) {
+
+            if (this->graph.getVerticesCount() <= 1) {
+                this->createMessage("Cannot solve task", 0.5f);
+
+            } else {
+                auto tmp = this->graph.getIncidentMatrix();
+                auto index = 0;
+                for (index = 0; index < tmp.second.size() && !(tmp.second[index] == startVoyageurVertexName); ++index);
+                auto &matrix = tmp.first;
+                auto v = Voyager(matrix);
+                v.solveTask(index);
+                auto res = v.getRecord();
+                if (res == std::numeric_limits<int>::max()) {
+                    this->createMessage("Cannot solve task", 0.5f);
+                } else {
+                    auto path = v.getShortest();
+                    std::vector<std::string> pathRes(path.size());
+                    std::string stringRes;
+                    stringRes.reserve(pathRes.size() * 10);
+                    int c = 0;
+                    for (auto &index: path) {
+                        pathRes[c++] = tmp.second[index];
+                    }
+                    for (auto &vertex: pathRes) {
+                        stringRes.append(vertex + " ");
+                    }
+                    this->createMessage(fmt::format("len: {}\n path: {}", v.getRecord(), stringRes), 5.f);
+                    c = 1;
+                    for (const auto &v: pathRes) {
+                        if (c == pathRes.size()) {
+                            break;
+                        }
+                        auto e = this->mouseEventDispatcher->getEntityByName(v);
+                        auto vertexEntity = dynamic_cast<VertexEntity *>(e);
+                        if (vertexEntity) {
+                            vertexEntity->setAdditionalLabelString(std::to_string(c++));
+                            vertexEntity->setShowAdditionalLabel(true);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            this->createMessage("Select startVertex",1.f);
+        }
+    }
+#pragma endregion
 #pragma endregion
 #pragma region top-sort
     if (ImGui::Button("Topological sort")) {
